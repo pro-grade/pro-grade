@@ -1,0 +1,3 @@
+grant signedBy "adam", signedBy "duke" {
+	permission java.util.PropertyPermission "java.home", "read";
+};

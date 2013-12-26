@@ -1,0 +1,16 @@
+keystorePasswordURL "pass.txt";
+keystore "prograde.keystore", "type", "provider";
+priority "grant";
+
+grant principal sample.principal.SamplePrincipal "user1", codebase "file:./One.jar", principal sample.principal.NotSamplePrincipal "user2", signedBy "duke" {
+	permission java.util.PropertyPermission "java.home", "read,write", signedBy "adam";
+	permission java.util.PropertyPermission "user.home", "read", signedBy "bob";
+};
+
+grant codebase "file:./Two.jar" {
+	permission java.security.AllPermission;
+};
+
+deny {
+	permission javax.security.auth.AuthPermission "doAsPrivileged";
+};

@@ -1,0 +1,11 @@
+grant principal sample.principal.SamplePrincipal * {
+	permission java.util.PropertyPermission "java.home", "read";	
+};
+
+grant principal * * {
+	permission java.util.PropertyPermission "java.home", "read";	
+};
+
+grant principal "alias" {
+	permission java.util.PropertyPermission "java.home", "read";	
+};

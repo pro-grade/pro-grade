@@ -1,0 +1,3 @@
+grant codebase "file:./One.jar", codebase "file:./Two.jar" {
+	permission java.util.PropertyPermission "java.home", "read";
+};
