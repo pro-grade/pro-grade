@@ -18,18 +18,15 @@
   */
 package net.sourceforge.prograde.policy;
 
-import java.security.CodeSource;
-import java.security.Permission;
-import java.security.Permissions;
-import java.security.Principal;
-import java.security.ProtectionDomain;
+import java.security.*;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import net.sourceforge.prograde.debug.ProgradePolicyDebugger;
 
 /**
- *
+ * Class representing one policy entry.
+ * 
  * @author Ondrej Lukas
  */
 public class ProgradePolicyEntry {
@@ -42,6 +39,12 @@ public class ProgradePolicyEntry {
     // this is only for debug
     private boolean grant;
 
+    /**
+     * Constructor of ProgradePolicyEntry.
+     * 
+     * @param grant true if this policy entry represent grant entry, false if entry represent deny entry
+     * @param debug true for writing debug informations, false otherwise
+     */
     public ProgradePolicyEntry(boolean grant, boolean debug) {
         principals = new ArrayList<ProgradePrincipal>();
         permissions = new Permissions();
@@ -49,22 +52,49 @@ public class ProgradePolicyEntry {
         this.debug = debug;
     }
 
+    /**
+     * Setter of CodeSource of policy entry.
+     * 
+     * @param codeSource CodeSource of policy entry
+     */
     public void setCodeSource(CodeSource codeSource) {
         this.codeSource = codeSource;
     }
 
+    /**
+     * Method for adding principal (represent by ProgradePrincipal) to this ProgradePolicyEntry.
+     * 
+     * @param principal principal for adding
+     */
     public void addPrincipal(ProgradePrincipal principal) {
         principals.add(principal);
     }
 
+    /**
+     * Method for adding Permission to this ProgradePolicyEntry.
+     * 
+     * @param permission Permission for adding
+     */
     public void addPermission(Permission permission) {
         permissions.add(permission);
     }
 
+    /**
+     * Method for setting that this ProgradePolicyEntry never implies any Permission.
+     * 
+     * @param neverImplies true for set that this entry never implies any Permission, false otherwise
+     */
     public void setNeverImplies(boolean neverImplies) {
         this.neverImplies = neverImplies;
     }
 
+    /**
+     * Method for determining whether this ProgradePolicyEntry implies given permission.
+     * 
+     * @param pd active ProtectionDomain to test
+     * @param permission Permission which need to be determined
+     * @return true if ProgradePolicyEntry implies given Permission, false otherwise
+     */
     public boolean implies(ProtectionDomain pd, Permission permission) {
 
         if (neverImplies) {

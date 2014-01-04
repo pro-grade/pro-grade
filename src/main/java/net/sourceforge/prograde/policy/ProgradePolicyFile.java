@@ -56,7 +56,8 @@ import net.sourceforge.prograde.policyparser.ParsedPrincipal;
 import net.sourceforge.prograde.policyparser.Parser;
 
 /**
- *
+ * Policy file class which works with grant and deny policy rules in policy file.
+ * 
  * @author Ondrej Lukas
  */
 public class ProgradePolicyFile extends Policy {
@@ -68,10 +69,16 @@ public class ProgradePolicyFile extends Policy {
     private boolean debug = false;
     private boolean expandProperties;
 
+    /**
+     * Constructor of ProgradePolicyFile.
+     */
     public ProgradePolicyFile() {
         refresh();
     }
 
+    /**
+     * Method which loads policy data from policy file. 
+     */
     @Override
     public void refresh() {
         String debugProperty = System.getProperty("java.security.debug");
@@ -136,6 +143,11 @@ public class ProgradePolicyFile extends Policy {
 
     }
 
+    /**
+     * Private method which initializes policy from policy file.
+     * 
+     * @throws Exception when there was any problem during initializing policy
+     */
     private void initializePolicy() throws Exception {
         if (parsedPolicies.isEmpty()) {
             throw new Exception("Policy wasn't initialized!");
@@ -157,12 +169,30 @@ public class ProgradePolicyFile extends Policy {
         }
     }
 
+    /**
+     * Private method which adds parsedEntries to entries.
+     * 
+     * @param parsedEntries parsed entries from policy file which will be added to entries
+     * @param entries entries will add parsed entries to themselves
+     * @param keystore KeyStore which is used by this policy file
+     * @param grant true for priority grant, false for priority deny
+     * @throws Exception when there was any problem during adding entries to policy
+     */
     private void addParsedPolicyEntries(List<ParsedPolicyEntry> parsedEntries, List<ProgradePolicyEntry> entries, KeyStore keystore, boolean grant) throws Exception {
         for (ParsedPolicyEntry p : parsedEntries) {
             entries.add(initializePolicyEntry(p, keystore, grant));
         }
     }
 
+    /**
+     * Private method for initializing one policy entry.
+     * 
+     * @param parsedEntry parsed entry using for creating new entry ProgradePolicyEntry
+     * @param keystore KeyStore which is used by this policy file
+     * @param grant true for priority grant, false for priority deny
+     * @return ProgradePolicyEntry which represents this parsedEntry
+     * @throws Exception when there was any problem during initializing of policy entry
+     */
     private ProgradePolicyEntry initializePolicyEntry(ParsedPolicyEntry parsedEntry, KeyStore keystore, boolean grant) throws Exception {
         ProgradePolicyEntry entry = new ProgradePolicyEntry(grant, debug);
 
@@ -208,6 +238,13 @@ public class ProgradePolicyFile extends Policy {
         return entry;
     }
 
+    /**
+     * Method for determining whether this ProgradePolicyEntry implies given permission.
+     * 
+     * @param protectionDomain active ProtectionDomain to test
+     * @param permission Permission which need to be determined
+     * @return true if ProgradePolicyFile implies given Permission, false otherwise
+     */
     @Override
     public boolean implies(ProtectionDomain protectionDomain, Permission permission) {
 
@@ -270,16 +307,35 @@ public class ProgradePolicyFile extends Policy {
         }
     }
 
-    // return true = grant it
+    /**
+     * Private method for determining whether grant entries of ProgradePolicyFile imply given Permission.
+     * 
+     * @param domain active ProtectionDomain to test
+     * @param permission Permission which need to be determined
+     * @return true if grant entries of this ProgradePolicyFile grant given Permission, false otherwise
+     */
     private boolean grant(ProtectionDomain domain, Permission permission) {
         return grantOrDenyPermission(domain, permission, allGrantEntries);
     }
 
-    // return true = deny it
+    /**
+     * Private method for determining whether deny entries of ProgradePolicyFile imply given Permission which means denying it.
+     * 
+     * @param domain active ProtectionDomain to test
+     * @param permission Permission which need to be determined
+     * @return true if deny entries of this ProgradePolicyFile deny given Permission, false otherwise
+     */
     private boolean deny(ProtectionDomain domain, Permission permission) {
         return grantOrDenyPermission(domain, permission, allDenyEntries);
     }
 
+    /**
+     * Private method for determining whether grant or deny entries of ProgradePolicyFile imply given Permission.
+     * 
+     * @param domain active ProtectionDomain to test
+     * @param permission Permission which need to be determined
+     * @return true if grant or deny entries of this ProgradePolicyFile imply given Permission, false otherwise
+     */
     private boolean grantOrDenyPermission(ProtectionDomain domain, Permission permission, List<ProgradePolicyEntry> policyEntriesList) {
         for (ProgradePolicyEntry entry : policyEntriesList) {
             if (entry.implies(domain, permission)) {
@@ -289,6 +345,14 @@ public class ProgradePolicyFile extends Policy {
         return false;
     }
 
+    /**
+     * Private method for creating new Permission object from ParsedPermission.
+     * 
+     * @param p ParsedPermission with informations about Permission.
+     * @param keystore KeyStore which is used by this policy file
+     * @return new created Permission or null if Permission doesn't exist or doesn't be created.
+     * @throws Exception when there was any problem during creating Permission
+     */
     private Permission createPermission(ParsedPermission p, KeyStore keystore) throws Exception {
         if (p == null) {
             return null;
@@ -390,6 +454,13 @@ public class ProgradePolicyFile extends Policy {
         }
     }
 
+    /**
+     * Private method for expanding String which contains any property.
+     * 
+     * @param s String for expanding
+     * @return expanded String
+     * @throws Exception when any ends without '}' or contains inner property expansion
+     */
     private String expandStringWithProperty(String s) throws Exception {
         // if expandProperties is false, don't expand property
         if (!expandProperties) {
@@ -426,6 +497,14 @@ public class ProgradePolicyFile extends Policy {
         return toReturn;
     }
 
+    /**
+     * Private method for creating new CodeSource object from ParsedEntry.
+     * 
+     * @param parsedEntry ParsedEntry with informations about CodeSource
+     * @param keystore KeyStore which is used by this policy file
+     * @return new created CodeSource
+     * @throws Exception when there was any problem during creating CodeSource
+     */
     private CodeSource createCodeSource(ParsedPolicyEntry parsedEntry, KeyStore keystore) throws Exception {
         String parsedCodebase = expandStringWithProperty(parsedEntry.getCodebase());
         String parsedCertificates = expandStringWithProperty(parsedEntry.getSignedBy());
@@ -466,6 +545,13 @@ public class ProgradePolicyFile extends Policy {
         return cs;
     }
 
+    /**
+     * Private method for adapting URL for using of this ProgradePolicyFile.
+     * 
+     * @param url URL for adapting
+     * @return adapted URL
+     * @throws Exception when there was any problem during adapting URL
+     */
     private URL adaptURL(URL url) throws Exception {
         if (url != null && url.getProtocol().equals("file")) {
             String host = url.getHost();
@@ -501,6 +587,15 @@ public class ProgradePolicyFile extends Policy {
         return url;
     }
 
+    /**
+     * Private method for creating KeyStore object from ParsedKeystoreEntry and other information from policy file.
+     * 
+     * @param parsedKeystoreEntry parsedKeystoreEntry containing information about keystore
+     * @param keystorePasswordURL URL to file which contain password for given keystore
+     * @param policyFile used policy file
+     * @return new created KeyStore
+     * @throws Exception when there was any problem during creating KeyStore
+     */
     private KeyStore createKeystore(ParsedKeystoreEntry parsedKeystoreEntry, String keystorePasswordURL, File policyFile) throws Exception {
         if (parsedKeystoreEntry == null) {
             return null;
@@ -556,6 +651,14 @@ public class ProgradePolicyFile extends Policy {
         return toReturn;
     }
 
+    /**
+     * Private method for reading password for keystore from file.
+     * 
+     * @param keystorePasswordURL URL to file which contain password for keystore
+     * @param policyFile used policy file
+     * @return password for keystore
+     * @throws Exception when there was any problem during reading keystore password
+     */
     private char[] readKeystorePassword(String keystorePasswordURL, File policyFile) throws Exception {
         // try relative path to policy file
         File f = new File(getPolicyFileHome(policyFile), keystorePasswordURL);
@@ -577,6 +680,14 @@ public class ProgradePolicyFile extends Policy {
         return sb.toString().trim().toCharArray();
     }
 
+    /**
+     * Private method for gaining X500Principal from keystore according its alias.
+     * 
+     * @param alias alias of principal
+     * @param keystore KeyStore which is used by this policy file
+     * @return name of gained X500Principal
+     * @throws Exception when there was any problem during gaining Principal
+     */
     private String gainPrincipalFromAlias(String alias, KeyStore keystore) throws Exception {
         if (keystore == null) {
             return null;
@@ -595,13 +706,24 @@ public class ProgradePolicyFile extends Policy {
         return principal.getName();
     }
 
-    private String getPolicyFileHome(File file) throws Exception {
+    /**
+     * Private method for gaining absolute path of folder with policy file .
+     * 
+     * @param file file with policy
+     * @return absolute path for folder with policy file or null if file doesn't exist
+     */
+    private String getPolicyFileHome(File file) {
         if (file == null || !file.exists()) {
             return null;
         }
         return file.getAbsoluteFile().getParent();
     }
 
+    /**
+     * Private method for gaining and parsing all policies defined in java.security file.
+     * 
+     * @return Parsed policies in list of ParsedPolicy
+     */
     private List<ParsedPolicy> getJavaPolicies() {
         List<ParsedPolicy> list = new ArrayList<ParsedPolicy>();
 
@@ -639,6 +761,11 @@ public class ProgradePolicyFile extends Policy {
         return list;
     }
 
+    /**
+     * Private method for initializing static policy.
+     * 
+     * @throws Exception when there was any problem during initializing static policy
+     */
     private void initializeStaticPolicy() throws Exception {
 
         //grant codeBase "file:${{java.ext.dirs}}/*" {
@@ -709,6 +836,9 @@ public class ProgradePolicyFile extends Policy {
      * Symbols !,
      *
      * @, $, &, *, (, ), -, +, ' and comma don't need encode.
+     * 
+     * @param path path to encoding
+     * @return encoded path
      */
     protected String encodeSpecialCharacters(String path) {
         // this need to be first
@@ -743,6 +873,14 @@ public class ProgradePolicyFile extends Policy {
         return path;
     }
 
+    /**
+     * Private method for getting certificates from KeyStore.
+     * 
+     * @param parsedCertificates signedBy part of policy file defines certificates
+     * @param keystore KeyStore which is used by this policy file
+     * @return array of Certificates
+     * @throws Exception when there was any problem during getting Certificates
+     */
     private Certificate[] getCertificates(String parsedCertificates, KeyStore keystore) throws Exception {
         String[] splitCertificates = new String[0];
         if (parsedCertificates != null) {
