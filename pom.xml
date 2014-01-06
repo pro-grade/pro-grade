@@ -4,7 +4,7 @@
 
     <groupId>net.sourceforge.pro-grade</groupId>
     <artifactId>pro-grade</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
     <packaging>jar</packaging>
 
     <name>pro-grade</name>
