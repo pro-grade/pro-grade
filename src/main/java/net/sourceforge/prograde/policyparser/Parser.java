@@ -20,10 +20,13 @@ package net.sourceforge.prograde.policyparser;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.io.StreamTokenizer;
 import java.util.ArrayList;
 import java.util.List;
+
 import net.sourceforge.prograde.debug.ProgradePolicyDebugger;
 
 /**
@@ -85,7 +88,7 @@ public class Parser {
             ProgradePolicyDebugger.log("Parsing policy " + file.getCanonicalPath());
         }
 
-        BufferedReader br = new BufferedReader(new FileReader(file));
+        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
         st = new StreamTokenizer(br);
 
         st.resetSyntax();
