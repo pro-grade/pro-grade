@@ -1,30 +1,31 @@
 /** Copyright 2013 Ondrej Lukas
-  *
-  * This file is part of pro-grade.
-  *
-  * Pro-grade is free software: you can redistribute it and/or modify
-  * it under the terms of the GNU Lesser General Public License as published by
-  * the Free Software Foundation, either version 3 of the License, or
-  * (at your option) any later version.
-  *
-  * Pro-grade is distributed in the hope that it will be useful,
-  * but WITHOUT ANY WARRANTY; without even the implied warranty of
-  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  * GNU Lesser General Public License for more details.
-  *
-  * You should have received a copy of the GNU Lesser General Public License
-  * along with pro-grade.  If not, see <http://www.gnu.org/licenses/>.
-  *
-  */
+ *
+ * This file is part of pro-grade.
+ *
+ * Pro-grade is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Pro-grade is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with pro-grade.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 package net.sourceforge.prograde.policyparser;
 
-import java.io.File;
 import java.net.URL;
 import java.util.List;
 
+import net.sourceforge.prograde.type.Priority;
+
 /**
  * Class representing parsed policy file.
- *
+ * 
  * @author Ondrej Lukas
  */
 public class ParsedPolicy {
@@ -33,12 +34,11 @@ public class ParsedPolicy {
     private List<ParsedPolicyEntry> denyEntries;
     private String keystorePasswordURL;
     private ParsedKeystoreEntry keystore;
-    private boolean priority;
+    private Priority priority;
     private URL policyURL;
-    private File policyFile;
 
     /**
-     * Constructor for ParsedPolicy with predefined priority (set to false which means denying priority).
+     * Constructor for ParsedPolicy with default priority
      * 
      * @param grantEntries list of grant entries
      * @param denyEntries list of deny entries
@@ -46,9 +46,9 @@ public class ParsedPolicy {
      * @param keystorePasswordURL keystore password URL
      * @param policyFile file with this parsed policy file
      */
-    public ParsedPolicy(List<ParsedPolicyEntry> grantEntries, List<ParsedPolicyEntry> denyEntries, ParsedKeystoreEntry keystore, String keystorePasswordURL,
-            File policyFile) {
-        this(grantEntries, denyEntries, keystore, keystorePasswordURL, policyFile, false);
+    public ParsedPolicy(List<ParsedPolicyEntry> grantEntries, List<ParsedPolicyEntry> denyEntries,
+            ParsedKeystoreEntry keystore, String keystorePasswordURL) {
+        this(grantEntries, denyEntries, keystore, keystorePasswordURL, null);
     }
 
     /**
@@ -59,15 +59,14 @@ public class ParsedPolicy {
      * @param keystore keystore entry
      * @param keystorePasswordURL keystore password URL
      * @param policyFile file with this parsed policy file
-     * @param priority priority of entries, true means priority grant, false means priority deny
+     * @param priority priority of entries
      */
-    public ParsedPolicy(List<ParsedPolicyEntry> grantEntries, List<ParsedPolicyEntry> denyEntries, ParsedKeystoreEntry keystore, String keystorePasswordURL,
-            File policyFile, boolean priority) {
+    public ParsedPolicy(List<ParsedPolicyEntry> grantEntries, List<ParsedPolicyEntry> denyEntries,
+            ParsedKeystoreEntry keystore, String keystorePasswordURL, Priority priority) {
         this.grantEntries = grantEntries;
         this.denyEntries = denyEntries;
         this.keystore = keystore;
         this.keystorePasswordURL = keystorePasswordURL;
-        this.policyFile = policyFile;
         this.priority = priority;
     }
 
@@ -110,9 +109,9 @@ public class ParsedPolicy {
     /**
      * Getter of priority from policy file.
      * 
-     * @return true for priority grant, false for priority deny
+     * @return the priority
      */
-    public boolean getPriority() {
+    public Priority getPriority() {
         return priority;
     }
 
@@ -125,45 +124,35 @@ public class ParsedPolicy {
         return policyURL;
     }
 
-    /**
-     * Getter of file with policy file.
-     * 
-     * @return file with policy file
-     */
-    public File getPolicyFile() {
-        return policyFile;
-    }
-
     @Override
     public String toString() {
-        String toReturn = "";
-        toReturn += "Grant entries:\n";
+        final StringBuilder sb = new StringBuilder("Grant entries:\n");
         for (ParsedPolicyEntry p : grantEntries) {
-            toReturn += p.toString();
-            toReturn += "\n";
+            sb.append(p.toString());
+            sb.append("\n");
         }
-        toReturn += "Deny entries:\n";
+        sb.append("Deny entries:\n");
         for (ParsedPolicyEntry p : denyEntries) {
-            toReturn += p.toString();
-            toReturn += "\n";
+            sb.append(p.toString());
+            sb.append("\n");
         }
-        toReturn += "\n";
-        toReturn += "Keystore: ";
+        sb.append("\n");
+        sb.append("Keystore: ");
         if (keystore != null) {
-            toReturn += keystore.toString();
+            sb.append(keystore.toString());
         } else {
-            toReturn += "undefined";
+            sb.append("undefined");
         }
-        toReturn += "\n";
-        toReturn += "Keystore Password URL: ";
+        sb.append("\n");
+        sb.append("Keystore Password URL: ");
         if (keystorePasswordURL != null) {
-            toReturn += keystorePasswordURL.toString();
+            sb.append(keystorePasswordURL.toString());
         } else {
-            toReturn += "undefined";
+            sb.append("undefined");
         }
-        toReturn += "\n";
-        toReturn += "Priority: ";
-        toReturn += (priority) ? "grant" : "deny";
-        return toReturn;
+        sb.append("\n");
+        sb.append("Priority: ");
+        sb.append(priority);
+        return sb.toString();
     }
 }

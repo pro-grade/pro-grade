@@ -1,26 +1,27 @@
 /** Copyright 2013 Ondrej Lukas
-  *
-  * This file is part of pro-grade.
-  *
-  * Pro-grade is free software: you can redistribute it and/or modify
-  * it under the terms of the GNU Lesser General Public License as published by
-  * the Free Software Foundation, either version 3 of the License, or
-  * (at your option) any later version.
-  *
-  * Pro-grade is distributed in the hope that it will be useful,
-  * but WITHOUT ANY WARRANTY; without even the implied warranty of
-  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  * GNU Lesser General Public License for more details.
-  *
-  * You should have received a copy of the GNU Lesser General Public License
-  * along with pro-grade.  If not, see <http://www.gnu.org/licenses/>.
-  *
-  */
+ *
+ * This file is part of pro-grade.
+ *
+ * Pro-grade is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Pro-grade is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with pro-grade.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 package net.sourceforge.prograde.policy;
 
 import java.awt.AWTPermission;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FilePermission;
 import java.io.FileReader;
 import java.io.Reader;
@@ -45,8 +46,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.PropertyPermission;
 import java.util.regex.Pattern;
+
 import javax.security.auth.AuthPermission;
 import javax.security.auth.x500.X500Principal;
+
 import net.sourceforge.prograde.debug.ProgradePolicyDebugger;
 import net.sourceforge.prograde.policyparser.ParsedKeystoreEntry;
 import net.sourceforge.prograde.policyparser.ParsedPermission;
@@ -54,6 +57,7 @@ import net.sourceforge.prograde.policyparser.ParsedPolicy;
 import net.sourceforge.prograde.policyparser.ParsedPolicyEntry;
 import net.sourceforge.prograde.policyparser.ParsedPrincipal;
 import net.sourceforge.prograde.policyparser.Parser;
+import net.sourceforge.prograde.type.Priority;
 
 /**
  * Policy file class which works with grant and deny policy rules in policy file.
@@ -62,12 +66,13 @@ import net.sourceforge.prograde.policyparser.Parser;
  */
 public class ProgradePolicyFile extends Policy {
 
-    private boolean priority = false; // true for grant, false for deny
+    private Priority priority; // true for grant, false for deny
     private List<ProgradePolicyEntry> allGrantEntries;
     private List<ProgradePolicyEntry> allDenyEntries;
     private List<ParsedPolicy> parsedPolicies;
     private boolean debug = false;
     private boolean expandProperties;
+    private File file;
 
     /**
      * Constructor of ProgradePolicyFile.
@@ -77,11 +82,11 @@ public class ProgradePolicyFile extends Policy {
     }
 
     /**
-     * Method which loads policy data from policy file. 
+     * Method which loads policy data from policy file.
      */
     @Override
     public void refresh() {
-        String debugProperty = System.getProperty("java.security.debug");
+        String debugProperty = SecurityActions.getSystemProperty("java.security.debug");
         debug = false;
         if (debugProperty != null) {
             String[] splitDebugProperty = debugProperty.split(",");
@@ -96,29 +101,44 @@ public class ProgradePolicyFile extends Policy {
             }
         }
 
-        expandProperties = Boolean.parseBoolean(Security.getProperty("policy.expandProperties"));
+        file = null;
+
+        String policy = SecurityActions.getSystemProperty("java.security.policy");
+        if (policy != null) {
+            final boolean twoEquals = policy.startsWith("=");
+            if (twoEquals) {
+                policy = policy.substring(1);
+            }
+            file = new File(policy);
+            FileReader fr = null;
+            try {
+                fr = new FileReader(file);
+            } catch (FileNotFoundException e) {
+                System.err.println("Unable to read policy file content. Exception message: " + e.getMessage());
+            }
+            loadPolicy(fr, Boolean.parseBoolean(Security.getProperty("policy.expandProperties")), twoEquals);
+        }
+    }
+
+    protected void loadPolicy(final Reader reader, final boolean expandProps, final boolean exclusiveMode) {
+        expandProperties = expandProps;
 
         allGrantEntries = new ArrayList<ProgradePolicyEntry>();
         allDenyEntries = new ArrayList<ProgradePolicyEntry>();
-        priority = false;
+        priority = null;
         parsedPolicies = new ArrayList<ParsedPolicy>();
 
-        boolean twoEquals = false;
-        String policy = System.getProperty("java.security.policy");
-        if (policy != null) {
-            if (policy.startsWith("=")) {
-                twoEquals = true;
-                policy = policy.substring(1);
-            }
+        if (reader != null) {
             try {
-                parsedPolicies.add(new Parser(debug).parse(new File(policy)));
+                file = null;
+                parsedPolicies.add(new Parser(debug).parse(reader));
             } catch (Exception ex) {
-                System.err.println("Given policy from property java.security.policy wasn't successfully loaded. Exception message: " + ex.getMessage());
+                System.err.println("Unbale to parse policy. Exception message: " + ex.getMessage());
             }
         }
 
-        // parse policies specified in java.security only in case when java.security.policy wasn't set with ==
-        if (!twoEquals) {
+        // parse policies specified in java.security when not in exclusive mode (==)
+        if (!exclusiveMode) {
             try {
                 parsedPolicies.addAll(getJavaPolicies());
             } catch (Exception ex) {
@@ -126,7 +146,7 @@ public class ProgradePolicyFile extends Policy {
             }
         }
 
-        if (!twoEquals && parsedPolicies.isEmpty()) {
+        if (!exclusiveMode && parsedPolicies.isEmpty()) {
             try {
                 initializeStaticPolicy();
             } catch (Exception ex) {
@@ -153,12 +173,19 @@ public class ProgradePolicyFile extends Policy {
             throw new Exception("Policy wasn't initialized!");
         }
         // set priority - priority is set according first loaded policy
-        priority = parsedPolicies.get(0).getPriority();
+        priority = null;
+        for (ParsedPolicy pp : parsedPolicies) {
+            priority = pp.getPriority();
+            if (priority != null)
+                break;
+        }
+        if (priority == null)
+            priority = Priority.DEFAULT;
 
         for (ParsedPolicy p : parsedPolicies) {
             KeyStore keystore = null;
             try {
-                keystore = createKeystore(p.getKeystore(), p.getKeystorePasswordURL(), p.getPolicyFile());
+                keystore = createKeystore(p.getKeystore(), p.getKeystorePasswordURL(), file);
             } catch (Exception ex) {
                 System.err.println("Keystore wasn't successfully initialized! Exception message: " + ex.getMessage());
             }
@@ -178,7 +205,8 @@ public class ProgradePolicyFile extends Policy {
      * @param grant true for priority grant, false for priority deny
      * @throws Exception when there was any problem during adding entries to policy
      */
-    private void addParsedPolicyEntries(List<ParsedPolicyEntry> parsedEntries, List<ProgradePolicyEntry> entries, KeyStore keystore, boolean grant) throws Exception {
+    private void addParsedPolicyEntries(List<ParsedPolicyEntry> parsedEntries, List<ProgradePolicyEntry> entries,
+            KeyStore keystore, boolean grant) throws Exception {
         for (ParsedPolicyEntry p : parsedEntries) {
             entries.add(initializePolicyEntry(p, keystore, grant));
         }
@@ -193,7 +221,8 @@ public class ProgradePolicyFile extends Policy {
      * @return ProgradePolicyEntry which represents this parsedEntry
      * @throws Exception when there was any problem during initializing of policy entry
      */
-    private ProgradePolicyEntry initializePolicyEntry(ParsedPolicyEntry parsedEntry, KeyStore keystore, boolean grant) throws Exception {
+    private ProgradePolicyEntry initializePolicyEntry(ParsedPolicyEntry parsedEntry, KeyStore keystore, boolean grant)
+            throws Exception {
         ProgradePolicyEntry entry = new ProgradePolicyEntry(grant, debug);
 
         // codesource
@@ -227,7 +256,7 @@ public class ProgradePolicyFile extends Policy {
             }
         }
 
-        //permissions
+        // permissions
         for (ParsedPermission p : parsedEntry.getPermissions()) {
             Permission perm = createPermission(p, keystore);
             if (perm != null) {
@@ -258,11 +287,11 @@ public class ProgradePolicyFile extends Policy {
             return true;
         }
 
-        if (priority) { // branch for grant priority
+        if (Priority.GRANT.equals(priority)) { // branch for grant priority
             if (debug) {
                 ProgradePolicyDebugger.log("Searching for granting for permission: " + permission + " ...");
             }
-            if (grant(protectionDomain, permission)) {
+            if (grantEntriesImplies(protectionDomain, permission)) {
                 if (debug) {
                     ProgradePolicyDebugger.log("Granting permission found, grant access.");
                 }
@@ -271,7 +300,7 @@ public class ProgradePolicyFile extends Policy {
                 if (debug) {
                     ProgradePolicyDebugger.log("Granting permission wasn't found, searching for denying...");
                 }
-                boolean toReturn = !deny(protectionDomain, permission);
+                boolean toReturn = !denyEntriesImplies(protectionDomain, permission);
                 if (debug) {
                     if (toReturn) {
                         ProgradePolicyDebugger.log("Denying permission wasn't found, grant access.");
@@ -285,7 +314,7 @@ public class ProgradePolicyFile extends Policy {
             if (debug) {
                 ProgradePolicyDebugger.log("Searching for denying for permission: " + permission + " ...");
             }
-            if (deny(protectionDomain, permission)) {
+            if (denyEntriesImplies(protectionDomain, permission)) {
                 if (debug) {
                     ProgradePolicyDebugger.log("Denying permission found, deny access.");
                 }
@@ -294,7 +323,7 @@ public class ProgradePolicyFile extends Policy {
                 if (debug) {
                     ProgradePolicyDebugger.log("Denying permission wasn't found, searching for granting...");
                 }
-                boolean toReturn = grant(protectionDomain, permission);
+                boolean toReturn = grantEntriesImplies(protectionDomain, permission);
                 if (debug) {
                     if (toReturn) {
                         ProgradePolicyDebugger.log("Granting permission found, grant access.");
@@ -314,8 +343,8 @@ public class ProgradePolicyFile extends Policy {
      * @param permission Permission which need to be determined
      * @return true if grant entries of this ProgradePolicyFile grant given Permission, false otherwise
      */
-    private boolean grant(ProtectionDomain domain, Permission permission) {
-        return grantOrDenyPermission(domain, permission, allGrantEntries);
+    private boolean grantEntriesImplies(ProtectionDomain domain, Permission permission) {
+        return entriesImplyPermission(allGrantEntries, domain, permission);
     }
 
     /**
@@ -325,8 +354,8 @@ public class ProgradePolicyFile extends Policy {
      * @param permission Permission which need to be determined
      * @return true if deny entries of this ProgradePolicyFile deny given Permission, false otherwise
      */
-    private boolean deny(ProtectionDomain domain, Permission permission) {
-        return grantOrDenyPermission(domain, permission, allDenyEntries);
+    private boolean denyEntriesImplies(ProtectionDomain domain, Permission permission) {
+        return entriesImplyPermission(allDenyEntries, domain, permission);
     }
 
     /**
@@ -334,9 +363,11 @@ public class ProgradePolicyFile extends Policy {
      * 
      * @param domain active ProtectionDomain to test
      * @param permission Permission which need to be determined
+     * 
      * @return true if grant or deny entries of this ProgradePolicyFile imply given Permission, false otherwise
      */
-    private boolean grantOrDenyPermission(ProtectionDomain domain, Permission permission, List<ProgradePolicyEntry> policyEntriesList) {
+    private boolean entriesImplyPermission(List<ProgradePolicyEntry> policyEntriesList, ProtectionDomain domain,
+            Permission permission) {
         for (ProgradePolicyEntry entry : policyEntriesList) {
             if (entry.implies(domain, permission)) {
                 return true;
@@ -368,8 +399,8 @@ public class ProgradePolicyFile extends Policy {
             Certificate[] certificates = getCertificates(expandStringWithProperty(p.getSignedBy()), keystore);
             if (p.getSignedBy() != null && certificates == null) {
                 if (debug) {
-                    ProgradePolicyDebugger.log("Permission with signedBy " + p.getSignedBy() + " is ignored. Certificate wasn't successfully found or loaded "
-                            + "from keystore");
+                    ProgradePolicyDebugger.log("Permission with signedBy " + p.getSignedBy()
+                            + " is ignored. Certificate wasn't successfully found or loaded " + "from keystore");
                 }
                 return null;
             }
@@ -401,8 +432,8 @@ public class ProgradePolicyFile extends Policy {
                 return new AuthPermission(permissionName, actions);
             }
         } catch (IllegalArgumentException ex) {
-            System.err.println("IllegalArgumentException in permission: ["
-                    + p.getPermissionType() + ", " + permissionName + ", " + actions + "]");
+            System.err.println("IllegalArgumentException in permission: [" + p.getPermissionType() + ", " + permissionName
+                    + ", " + actions + "]");
             return null;
         }
 
@@ -442,14 +473,14 @@ public class ProgradePolicyFile extends Policy {
 
         try {
             Constructor<?> c = clazz.getConstructor(String.class, String.class);
-            return (Permission) c.newInstance(new Object[]{permissionName, actions});
+            return (Permission) c.newInstance(new Object[] { permissionName, actions });
         } catch (NoSuchMethodException ex1) {
             try {
                 Constructor<?> c = clazz.getConstructor(String.class);
-                return (Permission) c.newInstance(new Object[]{permissionName});
+                return (Permission) c.newInstance(new Object[] { permissionName });
             } catch (NoSuchMethodException ex2) {
                 Constructor<?> c = clazz.getConstructor();
-                return (Permission) c.newInstance(new Object[]{});
+                return (Permission) c.newInstance(new Object[] {});
             }
         }
     }
@@ -489,7 +520,7 @@ public class ProgradePolicyFile extends Policy {
                 if (splitPart[0].equals("/")) {
                     toReturn += File.separator;
                 } else {
-                    toReturn += System.getProperty(splitPart[0]);
+                    toReturn += SecurityActions.getSystemProperty(splitPart[0]);
                 }
                 toReturn += splitPart[1];
             }
@@ -596,7 +627,8 @@ public class ProgradePolicyFile extends Policy {
      * @return new created KeyStore
      * @throws Exception when there was any problem during creating KeyStore
      */
-    private KeyStore createKeystore(ParsedKeystoreEntry parsedKeystoreEntry, String keystorePasswordURL, File policyFile) throws Exception {
+    private KeyStore createKeystore(ParsedKeystoreEntry parsedKeystoreEntry, String keystorePasswordURL, File policyFile)
+            throws Exception {
         if (parsedKeystoreEntry == null) {
             return null;
         }
@@ -734,8 +766,8 @@ public class ProgradePolicyFile extends Policy {
                 try {
                     policyUrl = expandStringWithProperty(policyUrl.substring(5));
                 } catch (Exception ex) {
-                    System.err.println("Expanding filepath in policy policy.url." + counter + "=file:" + policyUrl + " failed. Exception message: "
-                            + ex.getMessage());
+                    System.err.println("Expanding filepath in policy policy.url." + counter + "=file:" + policyUrl
+                            + " failed. Exception message: " + ex.getMessage());
                     counter++;
                     continue;
                 }
@@ -748,8 +780,8 @@ public class ProgradePolicyFile extends Policy {
                         System.err.println("Parsed policy policy.url." + counter + "=file:" + policyUrl + " is null");
                     }
                 } catch (Exception ex) {
-                    System.err.println("Policy policy.url." + counter + "=file:" + policyUrl + " wasn't successfully parsed. Exception message: "
-                            + ex.getMessage());
+                    System.err.println("Policy policy.url." + counter + "=file:" + policyUrl
+                            + " wasn't successfully parsed. Exception message: " + ex.getMessage());
                 }
             } else {
                 System.err.println("Sorry, this policy works only with local text policy file! "
@@ -768,9 +800,9 @@ public class ProgradePolicyFile extends Policy {
      */
     private void initializeStaticPolicy() throws Exception {
 
-        //grant codeBase "file:${{java.ext.dirs}}/*" {
-        //    permission java.security.AllPermission;
-        //};
+        // grant codeBase "file:${{java.ext.dirs}}/*" {
+        // permission java.security.AllPermission;
+        // };
         ProgradePolicyEntry p1 = new ProgradePolicyEntry(true, debug);
         Certificate[] certificates = null;
         URL url = new URL(expandStringWithProperty("file:${{java.ext.dirs}}/*"));
@@ -779,29 +811,29 @@ public class ProgradePolicyFile extends Policy {
         p1.addPermission(new AllPermission());
         allGrantEntries.add(p1);
 
-        //grant {
-        //    permission java.lang.RuntimePermission "stopThread";
-        //    permission java.net.SocketPermission "localhost:1024-", "listen";
-        //    permission java.util.PropertyPermission "java.version", "read";
-        //    permission java.util.PropertyPermission "java.vendor", "read";
-        //    permission java.util.PropertyPermission "java.vendor.url", "read";
-        //    permission java.util.PropertyPermission "java.class.version", "read";
-        //    permission java.util.PropertyPermission "os.name", "read";
-        //    permission java.util.PropertyPermission "os.version", "read";
-        //    permission java.util.PropertyPermission "os.arch", "read";
-        //    permission java.util.PropertyPermission "file.separator", "read";
-        //    permission java.util.PropertyPermission "path.separator", "read";
-        //    permission java.util.PropertyPermission "line.separator", "read";
-        //    permission java.util.PropertyPermission "java.specification.version", "read";
-        //    permission java.util.PropertyPermission "java.specification.vendor", "read";
-        //    permission java.util.PropertyPermission "java.specification.name", "read";
-        //    permission java.util.PropertyPermission "java.vm.specification.version", "read";
-        //    permission java.util.PropertyPermission "java.vm.specification.vendor", "read";
-        //    permission java.util.PropertyPermission "java.vm.specification.name", "read";
-        //    permission java.util.PropertyPermission "java.vm.version", "read";
-        //    permission java.util.PropertyPermission "java.vm.vendor", "read";
-        //    permission java.util.PropertyPermission "java.vm.name", "read";
-        //};
+        // grant {
+        // permission java.lang.RuntimePermission "stopThread";
+        // permission java.net.SocketPermission "localhost:1024-", "listen";
+        // permission java.util.PropertyPermission "java.version", "read";
+        // permission java.util.PropertyPermission "java.vendor", "read";
+        // permission java.util.PropertyPermission "java.vendor.url", "read";
+        // permission java.util.PropertyPermission "java.class.version", "read";
+        // permission java.util.PropertyPermission "os.name", "read";
+        // permission java.util.PropertyPermission "os.version", "read";
+        // permission java.util.PropertyPermission "os.arch", "read";
+        // permission java.util.PropertyPermission "file.separator", "read";
+        // permission java.util.PropertyPermission "path.separator", "read";
+        // permission java.util.PropertyPermission "line.separator", "read";
+        // permission java.util.PropertyPermission "java.specification.version", "read";
+        // permission java.util.PropertyPermission "java.specification.vendor", "read";
+        // permission java.util.PropertyPermission "java.specification.name", "read";
+        // permission java.util.PropertyPermission "java.vm.specification.version", "read";
+        // permission java.util.PropertyPermission "java.vm.specification.vendor", "read";
+        // permission java.util.PropertyPermission "java.vm.specification.name", "read";
+        // permission java.util.PropertyPermission "java.vm.version", "read";
+        // permission java.util.PropertyPermission "java.vm.vendor", "read";
+        // permission java.util.PropertyPermission "java.vm.name", "read";
+        // };
         ProgradePolicyEntry p2 = new ProgradePolicyEntry(true, debug);
         p2.addPermission(new RuntimePermission("stopThread"));
         p2.addPermission(new SocketPermission("localhost:1024-", "listen"));
@@ -829,12 +861,13 @@ public class ProgradePolicyFile extends Policy {
     }
 
     /**
-     * Encode some special characters in path to CodeSource encoding for right working of CodeSource implies method. These method should be extended.
-     *
+     * Encode some special characters in path to CodeSource encoding for right working of CodeSource implies method. These
+     * method should be extended.
+     * 
      * It contain czech symbols: á, č, ď, é, ě, í, ň, ó, ř, š, ť, ú, ů, ý, ž and symbols #, %, ", =, §, <, > and space.
-     *
+     * 
      * Symbols !,
-     *
+     * 
      * @, $, &, *, (, ), -, +, ' and comma don't need encode.
      * 
      * @param path path to encoding

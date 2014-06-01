@@ -1,33 +1,34 @@
 /** Copyright 2013 Ondrej Lukas
-  *
-  * This file is part of pro-grade.
-  *
-  * Pro-grade is free software: you can redistribute it and/or modify
-  * it under the terms of the GNU Lesser General Public License as published by
-  * the Free Software Foundation, either version 3 of the License, or
-  * (at your option) any later version.
-  *
-  * Pro-grade is distributed in the hope that it will be useful,
-  * but WITHOUT ANY WARRANTY; without even the implied warranty of
-  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  * GNU Lesser General Public License for more details.
-  *
-  * You should have received a copy of the GNU Lesser General Public License
-  * along with pro-grade.  If not, see <http://www.gnu.org/licenses/>.
-  *
-  */
+ *
+ * This file is part of pro-grade.
+ *
+ * Pro-grade is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Pro-grade is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with pro-grade.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 package net.sourceforge.prograde.policyparser;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.StreamTokenizer;
 import java.util.ArrayList;
 import java.util.List;
 
 import net.sourceforge.prograde.debug.ProgradePolicyDebugger;
+import net.sourceforge.prograde.type.Priority;
 
 /**
  * Class for parsing text policy file to objects which represent this policy file.
@@ -42,12 +43,11 @@ public class Parser {
     private List<ParsedPolicyEntry> denyEntries;
     private ParsedKeystoreEntry keystoreEntry;
     private String keystorePasswordURL;
-    private boolean priority = false;
-    private boolean prioritySet = false;
+    private Priority priority;
     private boolean debug = false;
 
     /**
-     * Constructor with predefined debug to false. 
+     * Constructor with predefined debug to false.
      */
     public Parser() {
         this(false);
@@ -70,7 +70,6 @@ public class Parser {
      * @throws throw Exception when any problem occurred during parsing file (file doesn't exist, incompatible policy file etc.)
      */
     public ParsedPolicy parse(File file) throws Exception {
-
         if (file == null || !file.exists()) {
             if (debug) {
                 if (file == null) {
@@ -88,7 +87,18 @@ public class Parser {
             ProgradePolicyDebugger.log("Parsing policy " + file.getCanonicalPath());
         }
 
-        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+        return parse(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+    }
+
+    /**
+     * Parse policy from given reader to a ParsedPolicy object.
+     * 
+     * @param reader reader which provides policy content
+     * @return parsed policy file which is represented by ParsedPolicy
+     * @throws throw Exception when any problem occurred during parsing file (file doesn't exist, incompatible policy file etc.)
+     */
+    public ParsedPolicy parse(Reader reader) throws Exception {
+        BufferedReader br = new BufferedReader(reader);
         st = new StreamTokenizer(br);
 
         st.resetSyntax();
@@ -132,7 +142,9 @@ public class Parser {
                                     if (readWord.toLowerCase().equals("priority")) {
                                         parsePriority();
                                     } else {
-                                        throw new Exception("ER008: grant, deny, keystore or keystorePasswordURL expected, but was [" + readWord + "]");
+                                        throw new Exception(
+                                                "ER008: grant, deny, keystore or keystorePasswordURL expected, but was ["
+                                                        + readWord + "]");
                                     }
                                 }
                             }
@@ -171,11 +183,10 @@ public class Parser {
             } else {
                 ProgradePolicyDebugger.log("Adding following keystorePasswordURL: " + keystorePasswordURL);
             }
-            String logPriority = (priority) ? "grant" : "deny";
-            ProgradePolicyDebugger.log("Adding following priority: " + logPriority + "\n");
+            ProgradePolicyDebugger.log("Adding following priority: " + priority + "\n");
         }
 
-        return new ParsedPolicy(grantEntries, denyEntries, keystoreEntry, keystorePasswordURL, file, priority);
+        return new ParsedPolicy(grantEntries, denyEntries, keystoreEntry, keystorePasswordURL, priority);
     }
 
     /**
@@ -439,18 +450,17 @@ public class Parser {
     private void parsePriority() throws Exception {
         lookahead = st.nextToken();
         if (lookahead == '\"') {
-            if (!prioritySet) {
+            if (priority == null) {
                 String pr = st.sval;
                 if (pr.toLowerCase().equals("grant")) {
-                    priority = true;
+                    priority = Priority.GRANT;
                 } else {
                     if (pr.toLowerCase().equals("deny")) {
-                        priority = false;
+                        priority = Priority.DENY;
                     } else {
-                        throw new Exception("ER035: grant or deny expected.");
+                        throw new Exception("ER035: grant or deny priority expected.");
                     }
                 }
-                prioritySet = true;
             }
         } else {
             throw new Exception("ER036: quotes expected after priority keyword.");
