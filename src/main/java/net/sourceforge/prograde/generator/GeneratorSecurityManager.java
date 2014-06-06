@@ -1,4 +1,4 @@
-/** Copyright 2014 Josef Cacek
+/* Copyright 2014 Josef Cacek
  *
  * This file is part of pro-grade.
  *
@@ -14,35 +14,22 @@
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with pro-grade.  If not, see <http://www.gnu.org/licenses/>.
- *
  */
-package net.sourceforge.prograde.sm;
+package net.sourceforge.prograde.generator;
 
-import java.security.AccessController;
-import java.security.Policy;
-import java.security.PrivilegedAction;
-
-import net.sourceforge.prograde.policy.PolicyGenerator;
 
 /**
- * Class extending SecurityManager and using {@link PolicyGenerator} policy for
- * access controlling.
+ * Class extending SecurityManager and using {@link NotifyAndAllowPolicy} policy with
+ * {@link GeneratePolicyFromDeniedPermissions} listener for generating policy file from denied permissions.
  * 
  * @author Josef Cacek
  */
-public class PolicyGeneratorSecurityManager extends SecurityManager {
+public class GeneratorSecurityManager extends SecurityManager {
 
-	/**
-	 * Constructor which also set ProgradePolicyFile as Policy.
-	 */
-	public PolicyGeneratorSecurityManager() {
-		super();
-		AccessController.doPrivileged(new PrivilegedAction<Void>() {
-			@Override
-			public Void run() {
-				Policy.setPolicy(new PolicyGenerator());
-				return null;
-			}
-		});
-	}
+    /**
+     * Constructor which also set ProgradePolicyFile as Policy.
+     */
+    public GeneratorSecurityManager() {
+        SecurityActions.setPolicy(new NotifyAndAllowPolicy(null, new GeneratePolicyFromDeniedPermissions()));
+    }
 }

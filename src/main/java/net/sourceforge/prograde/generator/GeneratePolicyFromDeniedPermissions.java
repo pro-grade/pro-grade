@@ -1,5 +1,4 @@
-/** 
- * Copyright 2014 Josef Cacek
+/* Copyright 2014 Josef Cacek
  *
  * This file is part of pro-grade.
  *
@@ -15,17 +14,14 @@
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with pro-grade.  If not, see <http://www.gnu.org/licenses/>.
- *
  */
-package net.sourceforge.prograde.policy;
+package net.sourceforge.prograde.generator;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.security.AllPermission;
 import java.security.CodeSource;
 import java.security.Permission;
-import java.security.Policy;
 import java.security.ProtectionDomain;
 import java.util.Date;
 import java.util.HashMap;
@@ -34,32 +30,47 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Policy wrapper for debug purposes. It's main goal is to generate policy file with permissions checked by application, but not
- * included in the wrapped policy.
+ * DeniedPermissionListener implementation which generates a policy file with the denied permissions.
+ * <p>
+ * File to which is the policy written is either provided to a constructor or value of system property
+ * {@value #PROGRADE_GENERATED_POLICY} is used as the file path. When neither a file instance nor the system property is
+ * provided a temporary file is created using {@link File#createTempFile(String, String)}.
  * 
  * @author Josef Cacek
  */
-public class PolicyGenerator extends Policy {
+public final class GeneratePolicyFromDeniedPermissions implements DeniedPermissionListener {
+
+    /**
+     * System property name for setting generated policy file path when the file is not specified in the constructor.
+     */
+    public static final String PROGRADE_GENERATED_POLICY = "prograde.generated.policy";
 
     private final Map<CodeSource, Set<Permission>> missingPermissions = new HashMap<CodeSource, Set<Permission>>();
-    private File file;
+    private final File file;
 
-    private Policy wrappedPolicy;
-
-    public PolicyGenerator() {
-        this(null, null);
+    /**
+     * Default constructor.
+     */
+    public GeneratePolicyFromDeniedPermissions() {
+        this(null);
     }
 
-    public PolicyGenerator(File targetFile, Policy policy) {
+    /**
+     * Constructor.
+     * 
+     * @param targetFile file to which the policy generated from denied permissions will be written
+     */
+    public GeneratePolicyFromDeniedPermissions(final File targetFile) {
         if (targetFile != null) {
             file = targetFile;
         } else {
-            String sysProp = SecurityActions.getSystemProperty("prograde.generated.policy");
+            String sysProp = SecurityActions.getSystemProperty(PROGRADE_GENERATED_POLICY);
             if (sysProp != null) {
                 file = new File(sysProp);
             } else {
                 try {
                     file = File.createTempFile("generated-", ".policy");
+                    System.err.println("Writing policy to temporary file: " + file.getAbsolutePath());
                 } catch (IOException e) {
                     throw new RuntimeException("Unable to create a new policy file", e);
                 }
@@ -69,42 +80,45 @@ public class PolicyGenerator extends Policy {
                 e.printStackTrace();
             }
         }
-
-        wrappedPolicy = policy != null ? policy : SecurityActions.getPolicy();
     }
 
+    /**
+     * Writes the given permission under the grant entry with codesource from given {@link ProtectionDomain} into the generated
+     * policy file.
+     * 
+     * @see net.sourceforge.prograde.generator.DeniedPermissionListener#permissionDenied(java.security.ProtectionDomain,
+     *      java.security.Permission)
+     */
     @Override
-    public boolean implies(ProtectionDomain protectionDomain, Permission permission) {
-        if (wrappedPolicy != null && permission.getClass() == AllPermission.class) {
-            return wrappedPolicy.implies(protectionDomain, permission);
+    public void permissionDenied(final ProtectionDomain pd, final Permission perm) {
+        final CodeSource codeSource = pd.getCodeSource();
+        Set<Permission> permSet = missingPermissions.get(codeSource);
+        if (permSet == null) {
+            permSet = new HashSet<Permission>();
+            missingPermissions.put(codeSource, permSet);
         }
-        if (wrappedPolicy == null || !wrappedPolicy.implies(protectionDomain, permission)) {
-            final CodeSource codeSource = protectionDomain.getCodeSource();
-            Set<Permission> permSet = missingPermissions.get(codeSource);
-            if (permSet == null) {
-                permSet = new HashSet<Permission>();
-                missingPermissions.put(codeSource, permSet);
-            }
-            if (permSet.add(permission)) {
-                writeToFile();
-            }
+        if (permSet.add(perm)) {
+            writeToFile();
         }
-        return true;
     }
 
+    /**
+     * Clears generated policy file.
+     * 
+     * @see net.sourceforge.prograde.generator.DeniedPermissionListener#policyRefreshed()
+     */
     @Override
-    public void refresh() {
-        if (wrappedPolicy != null)
-            wrappedPolicy.refresh();
+    public void policyRefreshed() {
         missingPermissions.clear();
         writeToFile();
     }
 
     private void writeToFile() {
         PrintWriter pw = null;
+        String className = getClass().getSimpleName();
         try {
             pw = new PrintWriter(file, "UTF-8");
-            pw.println("// PolicyGenerator - timestamp: " + new Date().toString());
+            pw.println("// " + className + " - timestamp: " + new Date().toString());
             pw.println();
             for (Map.Entry<CodeSource, Set<Permission>> csEntry : missingPermissions.entrySet()) {
                 pw.println("grant codeBase \"" + csEntry.getKey().getLocation() + "\" {");
@@ -121,7 +135,7 @@ public class PolicyGenerator extends Policy {
                 pw.println("};");
                 pw.println();
             }
-            pw.println("// PolicyGenerator - That's all");
+            pw.println("// " + className + " - That's all");
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -134,4 +148,5 @@ public class PolicyGenerator extends Policy {
             }
         }
     }
+
 }
