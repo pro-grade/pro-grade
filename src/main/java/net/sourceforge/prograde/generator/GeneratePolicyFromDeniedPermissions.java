@@ -23,6 +23,7 @@ import java.io.PrintWriter;
 import java.security.CodeSource;
 import java.security.Permission;
 import java.security.ProtectionDomain;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,7 +46,8 @@ public final class GeneratePolicyFromDeniedPermissions implements DeniedPermissi
      */
     public static final String PROGRADE_GENERATED_POLICY = "prograde.generated.policy";
 
-    private final Map<CodeSource, Set<Permission>> missingPermissions = new HashMap<CodeSource, Set<Permission>>();
+    private final Map<CodeSource, Set<Permission>> missingPermissions = Collections
+            .synchronizedMap(new HashMap<CodeSource, Set<Permission>>());
     private final File file;
 
     /**
@@ -75,10 +77,6 @@ public final class GeneratePolicyFromDeniedPermissions implements DeniedPermissi
                     throw new RuntimeException("Unable to create a new policy file", e);
                 }
             }
-            try {
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -94,8 +92,13 @@ public final class GeneratePolicyFromDeniedPermissions implements DeniedPermissi
         final CodeSource codeSource = pd.getCodeSource();
         Set<Permission> permSet = missingPermissions.get(codeSource);
         if (permSet == null) {
-            permSet = new HashSet<Permission>();
-            missingPermissions.put(codeSource, permSet);
+            synchronized (missingPermissions) {
+                permSet = missingPermissions.get(codeSource);
+                if (permSet == null) {
+                    permSet = Collections.synchronizedSet(new HashSet<Permission>());
+                    missingPermissions.put(codeSource, permSet);
+                }
+            }
         }
         if (permSet.add(perm)) {
             writeToFile();
