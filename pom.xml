@@ -46,6 +46,45 @@
     </dependencies>
 
     <build>
+		<pluginManagement>
+			<plugins>
+<!-- 
+				<plugin>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<version>2.4</version>
+					<configuration>
+						<descriptors>
+							<descriptor>src/main/assembly/assembly-dist.xml</descriptor>
+							<descriptor>src/main/assembly/assembly-src.xml</descriptor>
+						</descriptors>
+						<finalName>${project.artifactId}-${project.version}${version.suffix}</finalName>
+					</configuration>
+					<executions>
+						<execution>
+							<id>dist</id>
+							<phase>package</phase>
+							<goals>
+								<goal>single</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+ -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-site-plugin</artifactId>
+					<version>3.3</version>
+					<dependencies>
+						<dependency><!-- add support for ssh/scp -->
+							<groupId>org.apache.maven.wagon</groupId>
+							<artifactId>wagon-ssh</artifactId>
+							<version>2.5</version>
+						</dependency>
+					</dependencies>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -90,6 +129,21 @@
                     </execution>
                 </executions>
             </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-site-plugin</artifactId>
+				<dependencies>
+					<dependency>
+						<groupId>org.apache.maven.doxia</groupId>
+						<artifactId>doxia-module-markdown</artifactId>
+						<version>1.4</version>
+					</dependency>
+				</dependencies>
+				<configuration>
+					<generateProjectInfo>false</generateProjectInfo>
+					<generateReports>false</generateReports>
+				</configuration>
+			</plugin>
         </plugins>
     </build>
 
