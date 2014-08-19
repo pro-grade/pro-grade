@@ -18,10 +18,13 @@
 package net.sourceforge.prograde.generator;
 
 import java.io.File;
+import java.io.FilePermission;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.security.AccessController;
 import java.security.CodeSource;
 import java.security.Permission;
+import java.security.PrivilegedAction;
 import java.security.ProtectionDomain;
 import java.util.Collections;
 import java.util.Date;
@@ -46,9 +49,19 @@ public final class GeneratePolicyFromDeniedPermissions implements DeniedPermissi
      */
     public static final String PROGRADE_GENERATED_POLICY = "prograde.generated.policy";
 
+    private final PrivilegedAction<Void> WRITE_TO_FILE_ACTION = new PrivilegedAction<Void>() {
+        @Override
+        public Void run() {
+            writeToFile();
+            return null;
+        }
+    };
+
     private final Map<CodeSource, Set<Permission>> missingPermissions = Collections
             .synchronizedMap(new HashMap<CodeSource, Set<Permission>>());
     private final File file;
+    private boolean refreshed = false;
+    private final FilePermission filePermissionToSkip;
 
     /**
      * Default constructor.
@@ -78,6 +91,7 @@ public final class GeneratePolicyFromDeniedPermissions implements DeniedPermissi
                 }
             }
         }
+        filePermissionToSkip = new FilePermission(file.getPath(), "write");
     }
 
     /**
@@ -89,6 +103,9 @@ public final class GeneratePolicyFromDeniedPermissions implements DeniedPermissi
      */
     @Override
     public void permissionDenied(final ProtectionDomain pd, final Permission perm) {
+        if (filePermissionToSkip.equals(perm)) {
+            return;
+        }
         final CodeSource codeSource = pd.getCodeSource();
         Set<Permission> permSet = missingPermissions.get(codeSource);
         if (permSet == null) {
@@ -101,7 +118,7 @@ public final class GeneratePolicyFromDeniedPermissions implements DeniedPermissi
             }
         }
         if (permSet.add(perm)) {
-            writeToFile();
+            AccessController.doPrivileged(WRITE_TO_FILE_ACTION);
         }
     }
 
@@ -112,41 +129,48 @@ public final class GeneratePolicyFromDeniedPermissions implements DeniedPermissi
      */
     @Override
     public void policyRefreshed() {
-        missingPermissions.clear();
-        writeToFile();
+        synchronized (missingPermissions) {
+            refreshed = true;
+        }
+        AccessController.doPrivileged(WRITE_TO_FILE_ACTION);
     }
 
     private void writeToFile() {
         PrintWriter pw = null;
-        String className = getClass().getSimpleName();
-        try {
-            pw = new PrintWriter(file, "UTF-8");
-            pw.println("// " + className + " - timestamp: " + new Date().toString());
-            pw.println();
-            for (Map.Entry<CodeSource, Set<Permission>> csEntry : missingPermissions.entrySet()) {
-                pw.println("grant codeBase \"" + csEntry.getKey().getLocation() + "\" {");
-                for (Permission p : csEntry.getValue()) {
-                    pw.print("  permission " + p.getClass().getName());
-                    if (p.getName() != null) {
-                        pw.print(" \"" + p.getName() + "\"");
-                    }
-                    if (p.getActions() != null) {
-                        pw.print(", \"" + p.getActions() + "\"");
-                    }
-                    pw.println(";");
+        final String className = getClass().getSimpleName();
+        synchronized (missingPermissions) {
+            try {
+                pw = new PrintWriter(file, "UTF-8");
+                pw.println("// " + className + " - timestamp: " + new Date().toString());
+                if (refreshed) {
+                    pw.println("// The policy was refreshed already.");
                 }
-                pw.println("};");
                 pw.println();
-            }
-            pw.println("// " + className + " - That's all");
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (pw != null) {
-                try {
-                    pw.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
+                for (Map.Entry<CodeSource, Set<Permission>> csEntry : missingPermissions.entrySet()) {
+                    pw.println("grant codeBase \"" + csEntry.getKey().getLocation() + "\" {");
+                    for (Permission p : csEntry.getValue()) {
+                        pw.print("  permission " + p.getClass().getName());
+                        if (p.getName() != null) {
+                            pw.print(" \"" + p.getName() + "\"");
+                        }
+                        if (p.getActions() != null) {
+                            pw.print(", \"" + p.getActions() + "\"");
+                        }
+                        pw.println(";");
+                    }
+                    pw.println("};");
+                    pw.println();
+                }
+                pw.println("// " + className + " - That's all");
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                if (pw != null) {
+                    try {
+                        pw.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
