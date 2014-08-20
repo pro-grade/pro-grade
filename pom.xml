@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>net.sourceforge.pro-grade</groupId>
@@ -13,15 +14,15 @@
     <licenses>
         <license>
             <name>lgpl</name>
-            <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
+            <url>http://www.gnu.org/licenses/lgpl.html</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
 
     <scm>
-        <connection>scm:git:git://github.com:olukas/pro-grade.git</connection>
-        <developerConnection>scm:git:git@github.com:olukas/pro-grade.git</developerConnection>
-        <url>http://github.com/olukas/pro-grade</url>
+        <connection>scm:git:git://github.com:pro-grade/pro-grade.git</connection>
+        <developerConnection>scm:git:git@github.com:pro-grade/pro-grade.git</developerConnection>
+        <url>http://github.com/pro-grade/pro-grade</url>
     </scm>
 
     <developers>
@@ -29,6 +30,10 @@
             <id>olukas</id>
             <name>Ondrej Lukas</name>
             <email>xondrejlukas@gmail.com</email>
+        </developer>
+        <developer>
+            <id>kwart</id>
+            <name>Josef Cacek</name>
         </developer>
     </developers>
 
@@ -46,44 +51,23 @@
     </dependencies>
 
     <build>
-		<pluginManagement>
-			<plugins>
-<!-- 
-				<plugin>
-					<artifactId>maven-assembly-plugin</artifactId>
-					<version>2.4</version>
-					<configuration>
-						<descriptors>
-							<descriptor>src/main/assembly/assembly-dist.xml</descriptor>
-							<descriptor>src/main/assembly/assembly-src.xml</descriptor>
-						</descriptors>
-						<finalName>${project.artifactId}-${project.version}${version.suffix}</finalName>
-					</configuration>
-					<executions>
-						<execution>
-							<id>dist</id>
-							<phase>package</phase>
-							<goals>
-								<goal>single</goal>
-							</goals>
-						</execution>
-					</executions>
-				</plugin>
- -->
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-site-plugin</artifactId>
-					<version>3.3</version>
-					<dependencies>
-						<dependency><!-- add support for ssh/scp -->
-							<groupId>org.apache.maven.wagon</groupId>
-							<artifactId>wagon-ssh</artifactId>
-							<version>2.5</version>
-						</dependency>
-					</dependencies>
-				</plugin>
-			</plugins>
-		</pluginManagement>
+        <finalName>${project.artifactId}</finalName>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-site-plugin</artifactId>
+                    <version>3.3</version>
+                    <dependencies>
+                        <dependency><!-- add support for ssh/scp -->
+                            <groupId>org.apache.maven.wagon</groupId>
+                            <artifactId>wagon-ssh</artifactId>
+                            <version>2.5</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+            </plugins>
+        </pluginManagement>
 
         <plugins>
             <plugin>
@@ -129,21 +113,21 @@
                     </execution>
                 </executions>
             </plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-site-plugin</artifactId>
-				<dependencies>
-					<dependency>
-						<groupId>org.apache.maven.doxia</groupId>
-						<artifactId>doxia-module-markdown</artifactId>
-						<version>1.4</version>
-					</dependency>
-				</dependencies>
-				<configuration>
-					<generateProjectInfo>false</generateProjectInfo>
-					<generateReports>false</generateReports>
-				</configuration>
-			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.maven.doxia</groupId>
+                        <artifactId>doxia-module-markdown</artifactId>
+                        <version>1.4</version>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <generateProjectInfo>false</generateProjectInfo>
+                    <generateReports>false</generateReports>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
