@@ -17,19 +17,18 @@
  */
 package net.sourceforge.prograde.generator;
 
-
 /**
- * Class extending SecurityManager and using {@link NotifyAndAllowPolicy} policy with
- * {@link GeneratePolicyFromDeniedPermissions} listener for generating policy file from denied permissions.
+ * Class extending SecurityManager and using {@link NotifyAndAllowPolicy} policy with {@link PrintDeniedPermissions} listener
+ * for writing missing permissions to error stream.
  * 
  * @author Josef Cacek
  */
-public class GeneratorSecurityManager extends SecurityManager {
+public class DumpMissingPermissionsJSM extends SecurityManager {
 
     /**
-     * Constructor which also set ProgradePolicyFile as Policy.
+     * JSM Constructor.
      */
-    public GeneratorSecurityManager() {
-        SecurityActions.setPolicy(new NotifyAndAllowPolicy(null, new GeneratePolicyFromDeniedPermissions()));
+    public DumpMissingPermissionsJSM() {
+        SecurityActions.setPolicy(new NotifyAndAllowPolicy(null, new PrintDeniedPermissions()));
     }
 }
