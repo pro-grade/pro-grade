@@ -17,7 +17,7 @@ Only thing what you need to do is running your application with net.sourceforge.
 
 It is a quite similar as standard policy in Java. It also works with policy file with grant entries, but you can also write deny entries - it uses same definitions as grant entries but meaning of them is opposite. For denying rules use keyword "deny".
 
-You can take a look at [prograde testsuite](https://github.com/olukas/progradeTests). It contains some configuration of policy files (for tests) and you'll look how exactly using denying rules.
+You can take a look at [prograde testsuite](https://github.com/pro-grade/progradeTests). It contains some configuration of policy files (for tests) and you'll look how exactly using denying rules.
 
 ### Priority entry
 
