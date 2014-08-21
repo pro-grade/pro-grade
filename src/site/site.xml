@@ -1,19 +1,81 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="totp-me">
+<project name="pro-grade Java Policy With Deny Rules">
+
+	<bannerLeft>
+		<name><![CDATA[
+      <span class="color-highlight">pro-grade</span> policy
+      ]]>
+		</name>
+		<href>http://pro-grade.sourceforge.net/</href>
+	</bannerLeft>
+
+	<publishDate position="bottom" format="yyyy-MM-dd" />
+	<version position="bottom" />
 
 	<skin>
-		<groupId>org.apache.maven.skins</groupId>
-		<artifactId>maven-fluido-skin</artifactId>
-		<version>1.3.0</version>
+		<groupId>lt.velykis.maven.skins</groupId>
+		<artifactId>reflow-maven-skin</artifactId>
+		<version>1.1.1</version>
 	</skin>
 
 	<body>
-		<menu name="pro-grade">
-			<item name="About" href="index.html" />
-			<item name="Download" href="http://sourceforge.net/projects/pro-grade/files/" target="_blank" />
+
+		<links>
+			<item name="Download" href="http://sourceforge.net/projects/pro-grade/files/" />
+			<item name="GitHub project" href="http://github.com/pro-grade/pro-grade/" />
+		</links>
+
+		<breadcrumbs>
+			<item name="pro-grade" href="/" />
+		</breadcrumbs>
+
+		<menu name="Main" inherit="top">
+			<item name="Home" href="./" />
+			<item name="GitHub project" href="http://github.com/pro-grade/pro-grade/" />
 			<item name="Release notes" href="ReleaseNotes-README.html" />
-			<item name="Bugs and issues" href="http://github.com/pro-grade/pro-grade/issues" target="_blank" />
-			<item name="Source code (github)" href="https://github.com/pro-grade/pro-grade" target="_blank" />
+		</menu>
+
+		<menu name="Policy generator" inherit="top">
+			<item name="About" href="java-permissions-helpers.html" />
+			<item name="Policy file generator" href="java-policy-file-generator.html" />
+			<item name="Permissions dumper" href="missing-permissions-dumper.html" />
 		</menu>
 	</body>
+
+	<custom>
+		<reflowSkin>
+			<!-- Make this to 'false' for local development, i.e. file:// URLs -->
+			<protocolRelativeURLs>false</protocolRelativeURLs>
+			<smoothScroll>true</smoothScroll>
+			<theme>default</theme>
+			<highlightJs>true</highlightJs>
+			<highlightJsTheme>github</highlightJsTheme>
+			<!-- <absoluteResourceURL>http://pro-grade.sourceforge.net/</absoluteResourceURL> -->
+			<brand>
+				<!-- Brand text in top-left part of the site -->
+				<name>
+          <![CDATA[
+          <span class="color-highlight">pro-grade</span>
+          ]]>
+				</name>
+				<href>http://pro-grade.sourceforge.net/</href>
+			</brand>
+			<slogan>Java Policy With Grant And Deny Rules</slogan>
+			<titleTemplate>%2$s | %1$s</titleTemplate>
+			<toc>top</toc>
+			<tocTopMax>6</tocTopMax>
+			<topNav>Policy generator</topNav>
+			<bottomNav maxSpan="9">
+				<column>Main</column>
+				<column>Policy generator</column>
+				<column>reports</column>
+			</bottomNav>
+			<bottomDescription>
+        <![CDATA[
+          <span class="color-highlight">pro-grade</span> is a custom java.security.Policy implementation
+          with support for <strong>deny</strong> entries.
+        ]]>
+			</bottomDescription>
+		</reflowSkin>
+	</custom>
 </project>

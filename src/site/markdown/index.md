@@ -1,34 +1,47 @@
-<head>
-    <title>ProGrade</title>
-</head>
-# ![pro-grade](images/prograde.png) pro-grade - Java Security Manager reloaded
+# Prograde
 
-## Download
+**Policy Rules Of GRanting And DEnying**
+
+*Java Security Policy implementation with denying rules*
+
+## Get it now
 
 Download the [latest binaries](https://sourceforge.net/projects/pro-grade/files/latest/download)
 from the [SourceForge project pages](https://sourceforge.net/projects/pro-grade/).
 
-## Features
+## Maven dependency
 
-Key features:
+```xml
+<dependency>
+    <groupId>net.sourceforge.pro-grade</groupId>
+    <artifactId>pro-grade</artifactId>
+    <version>1.1</version>
+</dependency>
+```
 
- * support for deny rules
- * policy generator for debug purposes
+## Policy file sample
 
-### Change log
+```
+priority "deny";
 
-Check [Release notes](ReleaseNotes-README.html) for the list of changes.
+grant {
+	permission java.io.FilePermission "/tmp/*", "read,write";
+};
 
-## How to install it
+deny {
+	permission java.io.FilePermission "/tmp/static/*", "write";
+};
+```
 
-TODO
+## Usage
 
-## How to use it
-
-TODO
+```Shell
+java -classpath [ORIGINAL_CP]:/path/to/prograde.jar \
+     -Djava.security.manager=... \
+     -Djava.security.policy=/path/to/prograde.policy \
+     com.acme.Main
+```
 
 ## License
 
-* [GNU LGPL, Version 3.0](http://www.gnu.org/licenses/)
-
-![pro-grade](images/lgplv3.png)
+[![pro-grade](images/lgplv3.png)](http://www.gnu.org/licenses/lgpl.html)
