@@ -9,7 +9,7 @@
 
 	<name>pro-grade</name>
 	<description>Maven project for Java Security Policy with denying rules</description>
-	<url>http://sourceforge.net/projects/pro-grade</url>
+	<url>http://pro-grade.sourceforge.net/</url>
 
 	<licenses>
 		<license>

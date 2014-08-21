@@ -21,7 +21,7 @@
 	<body>
 
 		<links>
-			<item name="Download" href="http://sourceforge.net/projects/pro-grade/files/" />
+			<item name="Download" href="http://sourceforge.net/projects/pro-grade/files/latest/download" />
 			<item name="GitHub project" href="http://github.com/pro-grade/pro-grade/" />
 		</links>
 
@@ -45,7 +45,9 @@
 	<custom>
 		<reflowSkin>
 			<!-- Make this to 'false' for local development, i.e. file:// URLs -->
+<!-- 
 			<protocolRelativeURLs>false</protocolRelativeURLs>
+ -->
 			<smoothScroll>true</smoothScroll>
 			<theme>default</theme>
 			<highlightJs>true</highlightJs>

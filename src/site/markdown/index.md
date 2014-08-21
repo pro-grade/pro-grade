@@ -6,8 +6,8 @@
 
 ## Get it now
 
-Download the [latest binaries](https://sourceforge.net/projects/pro-grade/files/latest/download)
-from the [SourceForge project pages](https://sourceforge.net/projects/pro-grade/).
+Download the [latest binaries](http://sourceforge.net/projects/pro-grade/files/latest/download)
+from the [SourceForge project pages](http://sourceforge.net/projects/pro-grade/).
 
 ## Maven dependency
 
