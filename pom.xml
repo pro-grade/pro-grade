@@ -129,6 +129,10 @@
 			<name>Sonatype Nexus release repository</name>
 			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
 		</repository>
+		<site>
+			<id>pro-grade.sf.net</id>
+			<url>sftp://web.sourceforge.net/home/project-web/pro-grade/htdocs</url>
+		</site>
 	</distributionManagement>
 
 	<profiles>
