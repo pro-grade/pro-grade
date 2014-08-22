@@ -10,11 +10,15 @@
 	<name>pro-grade</name>
 	<description>Maven project for Java Security Policy with denying rules</description>
 	<url>http://pro-grade.sourceforge.net/</url>
+	<inceptionYear>2013</inceptionYear>
+	<organization>
+		<name>Ondřej Lukáš, Josef Cacek</name>
+	</organization>
 
 	<licenses>
 		<license>
-			<name>lgpl</name>
-			<url>http://www.gnu.org/licenses/lgpl.html</url>
+			<name>apache_v2</name>
+			<url>http://apache.org/licenses/LICENSE-2.0</url>
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
