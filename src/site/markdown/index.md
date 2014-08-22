@@ -1,4 +1,4 @@
-# ![pro-grade](images/prograde.png) Prograde
+# ![pro-grade](images/prograde.png) pro-grade
 
 **Policy Rules Of GRanting And DEnying**
 

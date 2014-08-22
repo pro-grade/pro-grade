@@ -1,13 +1,13 @@
-# Prograde
+# pro-grade
 
-Prograde means "Policy Rules Of GRanting And DEnying" and it is maven project for using Java Security Policy with denying rules.
+ProGrade means "Policy Rules Of GRanting And DEnying" and it is maven project for using Java Security Policy with denying rules.
 
 ## Build project
 Simply use:
 
 	$ mvn clean install
 
-## Add Prograde to your application
+## Add ProGrade to your application
 
 Only thing what you need to do is running your application with net.sourceforge.prograde.sm.ProgradeSecurityManager. ProgradeSecurityManager sets ProgradePolicyFile as Policy of the application.
 
