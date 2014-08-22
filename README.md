@@ -29,4 +29,4 @@ For setting priority use keyword "priority" and one of options "grant" or "deny"
 
 ## License
 
-* [GNU LGPL v.3](http://www.gnu.org/licenses/lgpl.html)
+* [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)

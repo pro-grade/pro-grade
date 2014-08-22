@@ -1,4 +1,4 @@
-# Prograde
+# ![pro-grade](images/prograde.png) Prograde
 
 **Policy Rules Of GRanting And DEnying**
 
@@ -44,4 +44,4 @@ java -classpath [ORIGINAL_CP]:/path/to/prograde.jar \
 
 ## License
 
-[![pro-grade](images/lgplv3.png)](http://www.gnu.org/licenses/lgpl.html)
+[Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
