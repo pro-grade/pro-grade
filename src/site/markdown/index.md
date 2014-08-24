@@ -1,6 +1,6 @@
-# ![pro-grade](images/prograde.png) pro-grade library
+# ![pro-grade](images/prograde.png) pro-grade
 
-**pro-grade**  software provides implementation of custom Java Security Managers and Security Policies.
+The **pro-grade** library provides implementation of custom Java Security Managers and Security Policies.
 The main component is a *Java Security Policy implementation with denying rules* as an addition to standard
 *grant* rules.
 
@@ -19,11 +19,11 @@ java -Djava.security.manager=net.sourceforge.prograde.sm.DumpMissingPermissionsJ
 
 The library contains following security manager implementations:
  
- * pro-grade
+ * ProGrade policy
  * policy generator
  * permissions debugger
 
-### pro-grade - Let's deny it!
+### ProGrade Policy - Let's deny it!
 
 Class name: **`net.sourceforge.prograde.sm.ProGradeJSM`**
 
@@ -31,7 +31,7 @@ Standard SecurityManager with possibility of using **deny** rules.
 
 [Read more ...](pro-grade.html)
 
-#### pro-grade policy file sample
+#### ProGrade Policy file example
 
 ```
 grant {
