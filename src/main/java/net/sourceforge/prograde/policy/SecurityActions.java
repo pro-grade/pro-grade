@@ -20,7 +20,6 @@
 package net.sourceforge.prograde.policy;
 
 import java.security.AccessController;
-import java.security.Policy;
 import java.security.PrivilegedAction;
 
 /**
@@ -28,7 +27,7 @@ import java.security.PrivilegedAction;
  * 
  * @author Josef Cacek
  */
-public class SecurityActions {
+class SecurityActions {
 
     /**
      * Returns a system property value using the specified <code>key</code>.
@@ -47,25 +46,6 @@ public class SecurityActions {
             });
         } else {
             return System.getProperty(key);
-        }
-    }
-
-    /**
-     * Returns the installed policy object.
-     * 
-     * @return
-     */
-    static Policy getPolicy() {
-        final SecurityManager sm = System.getSecurityManager();
-
-        if (sm != null) {
-            return AccessController.doPrivileged(new PrivilegedAction<Policy>() {
-                public Policy run() {
-                    return Policy.getPolicy();
-                }
-            });
-        } else {
-            return Policy.getPolicy();
         }
     }
 }

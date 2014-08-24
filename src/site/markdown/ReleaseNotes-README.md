@@ -1,14 +1,11 @@
-<head>
-    <title>Release Notes</title>
-</head>
 # Release Notes
 
-ProGrade security manager.
+pro-grade library
 
 ## 1.1
-TODO
-
+ * Apache License, version 2.0
+ * new helper policies and security managers added to help users with creating their policies
+ 
 ## 1.0
 
-The first version developed as a diploma thesis.
-...
+The first version (licensed under LGPLv3) developed as a diploma thesis.

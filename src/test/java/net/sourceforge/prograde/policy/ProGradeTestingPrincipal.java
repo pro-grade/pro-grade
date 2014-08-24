@@ -17,21 +17,24 @@
  * limitations under the License.
  * #L%
  */
-package net.sourceforge.prograde.debug;
+package net.sourceforge.prograde.policy;
+
+import java.security.Principal;
 
 /**
- * Class for printing debug information.
  * 
  * @author Ondrej Lukas
  */
-public class ProgradePolicyDebugger {
+public class ProGradeTestingPrincipal implements Principal {
 
-    /**
-     * Method for printing debug information to standard output. Method adds "Policy: " before message for printing.
-     * 
-     * @param log message for printing
-     */
-    public static void log(String log) {
-        System.out.println("Policy: " + log);
+    private String name;
+
+    public ProGradeTestingPrincipal(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 }

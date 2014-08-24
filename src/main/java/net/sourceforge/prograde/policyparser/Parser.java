@@ -28,7 +28,7 @@ import java.io.StreamTokenizer;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sourceforge.prograde.debug.ProgradePolicyDebugger;
+import net.sourceforge.prograde.debug.ProGradePolicyDebugger;
 import net.sourceforge.prograde.type.Priority;
 
 /**
@@ -74,10 +74,10 @@ public class Parser {
         if (file == null || !file.exists()) {
             if (debug) {
                 if (file == null) {
-                    ProgradePolicyDebugger.log("Given File is null");
+                    ProGradePolicyDebugger.log("Given File is null");
                 } else {
                     if (!file.exists()) {
-                        ProgradePolicyDebugger.log("Policy file " + file.getCanonicalPath() + " doesn't exists.");
+                        ProGradePolicyDebugger.log("Policy file " + file.getCanonicalPath() + " doesn't exists.");
                     }
                 }
             }
@@ -85,7 +85,7 @@ public class Parser {
         }
 
         if (debug) {
-            ProgradePolicyDebugger.log("Parsing policy " + file.getCanonicalPath());
+            ProGradePolicyDebugger.log("Parsing policy " + file.getCanonicalPath());
         }
 
         return parse(new InputStreamReader(new FileInputStream(file), "UTF-8"));
@@ -163,28 +163,28 @@ public class Parser {
 
         if (debug) {
             for (ParsedPolicyEntry p : grantEntries) {
-                ProgradePolicyDebugger.log("Adding following grant entry:");
-                ProgradePolicyDebugger.log(p.toString());
+                ProGradePolicyDebugger.log("Adding following grant entry:");
+                ProGradePolicyDebugger.log(p.toString());
             }
 
             for (ParsedPolicyEntry p : denyEntries) {
-                ProgradePolicyDebugger.log("Adding following deny entry:");
-                ProgradePolicyDebugger.log(p.toString());
+                ProGradePolicyDebugger.log("Adding following deny entry:");
+                ProGradePolicyDebugger.log(p.toString());
             }
 
             if (keystoreEntry == null) {
-                ProgradePolicyDebugger.log("KeyStore isn't set");
+                ProGradePolicyDebugger.log("KeyStore isn't set");
             } else {
-                ProgradePolicyDebugger.log("Adding following keystore:");
-                ProgradePolicyDebugger.log(keystoreEntry.toString());
+                ProGradePolicyDebugger.log("Adding following keystore:");
+                ProGradePolicyDebugger.log(keystoreEntry.toString());
             }
 
             if (keystorePasswordURL == null) {
-                ProgradePolicyDebugger.log("KeystorePasswordURL isn't set");
+                ProGradePolicyDebugger.log("KeystorePasswordURL isn't set");
             } else {
-                ProgradePolicyDebugger.log("Adding following keystorePasswordURL: " + keystorePasswordURL);
+                ProGradePolicyDebugger.log("Adding following keystorePasswordURL: " + keystorePasswordURL);
             }
-            ProgradePolicyDebugger.log("Adding following priority: " + priority + "\n");
+            ProGradePolicyDebugger.log("Adding following priority: " + priority + "\n");
         }
 
         return new ParsedPolicy(grantEntries, denyEntries, keystoreEntry, keystorePasswordURL, priority);

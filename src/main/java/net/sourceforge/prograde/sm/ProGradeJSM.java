@@ -19,15 +19,21 @@
  */
 package net.sourceforge.prograde.sm;
 
+import net.sourceforge.prograde.policy.ProGradePolicy;
+
 /**
  * Class extending SecurityManager and using ProgradePolicyFile for access controlling.
  * 
  * @author Ondrej Lukas
  * @author Josef Cacek
- * @deprecated use {@link ProGradeJSM} instead
  */
-@Deprecated
-public class ProgradeSecurityManager extends ProGradeJSM {
-    // Keep this class for backward compatibility.
-    // It just uses the parents impl.
+public class ProGradeJSM extends SecurityManager {
+
+    /**
+     * Constructor which also set ProgradePolicyFile as Policy.
+     */
+    public ProGradeJSM() {
+        super();
+        SecurityActions.setPolicy(new ProGradePolicy());
+    }
 }

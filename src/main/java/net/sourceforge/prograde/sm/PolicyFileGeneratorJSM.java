@@ -17,20 +17,23 @@
  * limitations under the License.
  * #L%
  */
-package net.sourceforge.prograde.generator;
+package net.sourceforge.prograde.sm;
+
+import net.sourceforge.prograde.generator.GeneratePolicyFromDeniedPermissions;
+import net.sourceforge.prograde.generator.NotifyAndAllowPolicy;
 
 /**
- * Class extending SecurityManager and using {@link NotifyAndAllowPolicy} policy with {@link PrintDeniedPermissions} listener
- * for writing missing permissions to error stream.
+ * Java Security Manager which sets {@link NotifyAndAllowPolicy} policy with {@link GeneratePolicyFromDeniedPermissions}
+ * listener for generating policy file from denied permissions.
  * 
  * @author Josef Cacek
  */
-public class DumpMissingPermissionsJSM extends SecurityManager {
+public class PolicyFileGeneratorJSM extends SecurityManager {
 
     /**
      * JSM Constructor.
      */
-    public DumpMissingPermissionsJSM() {
-        SecurityActions.setPolicy(new NotifyAndAllowPolicy(null, new PrintDeniedPermissions()));
+    public PolicyFileGeneratorJSM() {
+        SecurityActions.setPolicy(new NotifyAndAllowPolicy(null, new GeneratePolicyFromDeniedPermissions()));
     }
 }

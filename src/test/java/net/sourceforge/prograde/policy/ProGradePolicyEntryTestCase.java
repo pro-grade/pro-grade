@@ -36,7 +36,9 @@ import org.junit.Test;
  * 
  * @author Ondrej Lukas
  */
-public class ProgradePolicyEntryTestCase {
+public class ProGradePolicyEntryTestCase {
+
+    private static final String TESTING_PRINCIPAL_CLASSNAME = ProGradeTestingPrincipal.class.getName();
 
     /*
      * test whether permission implies works right in ProgradePolicyEntryTestCase implies method
@@ -46,7 +48,7 @@ public class ProgradePolicyEntryTestCase {
         ProtectionDomain pd = createPD();
 
         // test whether permission implies works right if permission implies other permission
-        ProgradePolicyEntry ppe = createWithAllPermission();
+        ProGradePolicyEntry ppe = createWithAllPermission();
         assertTrue(ppe.implies(pd, new PropertyPermission("java.home", "read")));
 
         // test whether permission implies works right for same permissions
@@ -57,7 +59,7 @@ public class ProgradePolicyEntryTestCase {
         assertFalse(ppe.implies(pd, new AllPermission()));
 
         // test whether permission implies works right if it has no permission
-        ppe = new ProgradePolicyEntry(true, false);
+        ppe = new ProGradePolicyEntry(true, false);
         assertFalse(ppe.implies(pd, new PropertyPermission("java.home", "read")));
 
     }
@@ -68,7 +70,7 @@ public class ProgradePolicyEntryTestCase {
     @Test
     public void testImpliesNeverImplies() {
         ProtectionDomain pd = createPD();
-        ProgradePolicyEntry ppe = createWithAllPermission();
+        ProGradePolicyEntry ppe = createWithAllPermission();
         ppe.setNeverImplies(true);
         assertFalse(ppe.implies(pd, new PropertyPermission("java.home", "read")));
         ppe.setNeverImplies(false);
@@ -80,7 +82,7 @@ public class ProgradePolicyEntryTestCase {
      */
     @Test
     public void testImpliesCodeSource() throws Exception {
-        ProgradePolicyEntry ppe = createWithAllPermission();
+        ProGradePolicyEntry ppe = createWithAllPermission();
         ppe.setCodeSource(new CodeSource(new URL("file:./path/to/file/-"), new Certificate[0]));
 
         // test whether PD with null CodeSource passes ProgradePolicyEntryTestCase implies method
@@ -105,57 +107,58 @@ public class ProgradePolicyEntryTestCase {
      */
     @Test
     public void testImpliesPrincipals() {
-        ProgradePolicyEntry ppe = createWithAllPermission();
-        ppe.addPrincipal(new ProgradePrincipal(null, null, true, true));
+        ProGradePolicyEntry ppe = createWithAllPermission();
+        ppe.addPrincipal(new ProGradePrincipal(null, null, true, true));
 
         // test whether PD with no Principal doesn't pass ProgradePolicyEntryTestCase implies method
         ProtectionDomain pd = createPD();
         assertFalse(ppe.implies(pd, new PropertyPermission("java.home", "read")));
 
         // test whether PD with any Principal passes ProgradePolicyEntryTestCase implies method
-        pd = createPDwithPrincipals(new Principal[] { new ProgradeTestingPrincipal("anyName") });
+        pd = createPDwithPrincipals(new Principal[] { new ProGradeTestingPrincipal("anyName") });
         assertTrue(ppe.implies(pd, new PropertyPermission("java.home", "read")));
 
-        ppe.addPrincipal(new ProgradePrincipal("net.sourceforge.prograde.policy.ProgradeTestingPrincipal", null, false, true));
+        ppe.addPrincipal(new ProGradePrincipal(TESTING_PRINCIPAL_CLASSNAME, null, false, true));
 
         // test whether PD with any Principal passes ProgradePolicyEntryTestCase implies method
-        pd = createPDwithPrincipals(new Principal[] { new ProgradeTestingPrincipal("anyName") });
+        pd = createPDwithPrincipals(new Principal[] { new ProGradeTestingPrincipal("anyName") });
         assertTrue(ppe.implies(pd, new PropertyPermission("java.home", "read")));
 
         ppe = createWithAllPermission();
-        ppe.addPrincipal(new ProgradePrincipal("net.sourceforge.prograde.policy.ProgradeTestingPrincipal", "A", false, false));
+
+        ppe.addPrincipal(new ProGradePrincipal(TESTING_PRINCIPAL_CLASSNAME, "A", false, false));
 
         // test whether PD with right Principal passes ProgradePolicyEntryTestCase implies method
-        pd = createPDwithPrincipals(new Principal[] { new ProgradeTestingPrincipal("A") });
+        pd = createPDwithPrincipals(new Principal[] { new ProGradeTestingPrincipal("A") });
         assertTrue(ppe.implies(pd, new PropertyPermission("java.home", "read")));
 
         // test whether PD with wrong Principal doesn't pass ProgradePolicyEntryTestCase implies method
-        pd = createPDwithPrincipals(new Principal[] { new ProgradeTestingPrincipal("B") });
+        pd = createPDwithPrincipals(new Principal[] { new ProGradeTestingPrincipal("B") });
         assertFalse(ppe.implies(pd, new PropertyPermission("java.home", "read")));
 
         // test whether PD with right and wrong Principal passes ProgradePolicyEntryTestCase implies method
-        pd = createPDwithPrincipals(new Principal[] { new ProgradeTestingPrincipal("A"), new ProgradeTestingPrincipal("B") });
+        pd = createPDwithPrincipals(new Principal[] { new ProGradeTestingPrincipal("A"), new ProGradeTestingPrincipal("B") });
         assertTrue(ppe.implies(pd, new PropertyPermission("java.home", "read")));
 
-        ppe.addPrincipal(new ProgradePrincipal("net.sourceforge.prograde.policy.ProgradeTestingPrincipal", "B", false, false));
+        ppe.addPrincipal(new ProGradePrincipal(TESTING_PRINCIPAL_CLASSNAME, "B", false, false));
 
         // test whether PD with only one right Principal doesn't pass ProgradePolicyEntryTestCase implies method
-        pd = createPDwithPrincipals(new Principal[] { new ProgradeTestingPrincipal("A") });
+        pd = createPDwithPrincipals(new Principal[] { new ProGradeTestingPrincipal("A") });
         assertFalse(ppe.implies(pd, new PropertyPermission("java.home", "read")));
 
         // test whether PD with both right Principals passes ProgradePolicyEntryTestCase implies method
-        pd = createPDwithPrincipals(new Principal[] { new ProgradeTestingPrincipal("A"), new ProgradeTestingPrincipal("B") });
+        pd = createPDwithPrincipals(new Principal[] { new ProGradeTestingPrincipal("A"), new ProGradeTestingPrincipal("B") });
         assertTrue(ppe.implies(pd, new PropertyPermission("java.home", "read")));
     }
 
-    private ProgradePolicyEntry createWithAllPermission() {
-        ProgradePolicyEntry p = new ProgradePolicyEntry(true, false);
+    private ProGradePolicyEntry createWithAllPermission() {
+        ProGradePolicyEntry p = new ProGradePolicyEntry(true, false);
         p.addPermission(new AllPermission());
         return p;
     }
 
-    private ProgradePolicyEntry createWithJavaHomePropertyPermission() {
-        ProgradePolicyEntry p = new ProgradePolicyEntry(true, false);
+    private ProGradePolicyEntry createWithJavaHomePropertyPermission() {
+        ProGradePolicyEntry p = new ProGradePolicyEntry(true, false);
         p.addPermission(new PropertyPermission("java.home", "read"));
         return p;
     }

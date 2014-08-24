@@ -24,7 +24,7 @@ package net.sourceforge.prograde.policy;
  * 
  * @author Ondrej Lukas
  */
-public class ProgradePrincipal {
+public class ProGradePrincipal {
 
     private String className;
     private String principalName;
@@ -34,7 +34,7 @@ public class ProgradePrincipal {
     /**
      * Nonparametric constructor of ProgradePrincipal.
      */
-    public ProgradePrincipal() {
+    public ProGradePrincipal() {
     }
 
     /**
@@ -45,7 +45,7 @@ public class ProgradePrincipal {
      * @param wildcardClassName true if principal entry has wildcard for principal class name or false if it doesn't have it
      * @param wildcardPrincipal true if principal entry has wildcard for principal name or false if it doesn't have it
      */
-    public ProgradePrincipal(String className, String principalName, boolean wildcardClassName, boolean wildcardPrincipal) {
+    public ProGradePrincipal(String className, String principalName, boolean wildcardClassName, boolean wildcardPrincipal) {
         this.className = className;
         this.principalName = principalName;
         this.wildcardClassName = wildcardClassName;

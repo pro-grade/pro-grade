@@ -28,17 +28,17 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
-import net.sourceforge.prograde.debug.ProgradePolicyDebugger;
+import net.sourceforge.prograde.debug.ProGradePolicyDebugger;
 
 /**
  * Class representing one policy entry.
  * 
  * @author Ondrej Lukas
  */
-public class ProgradePolicyEntry {
+public class ProGradePolicyEntry {
 
     private CodeSource codeSource; // codebase + cert gained from signedby
-    private List<ProgradePrincipal> principals;
+    private List<ProGradePrincipal> principals;
     private Permissions permissions;
     private boolean neverImplies = false;
     private boolean debug = false;
@@ -51,8 +51,8 @@ public class ProgradePolicyEntry {
      * @param grant true if this policy entry represent grant entry, false if entry represent deny entry
      * @param debug true for writing debug informations, false otherwise
      */
-    public ProgradePolicyEntry(boolean grant, boolean debug) {
-        principals = new ArrayList<ProgradePrincipal>();
+    public ProGradePolicyEntry(boolean grant, boolean debug) {
+        principals = new ArrayList<ProGradePrincipal>();
         permissions = new Permissions();
         this.grant = grant;
         this.debug = debug;
@@ -72,7 +72,7 @@ public class ProgradePolicyEntry {
      * 
      * @param principal principal for adding
      */
-    public void addPrincipal(ProgradePrincipal principal) {
+    public void addPrincipal(ProGradePrincipal principal) {
         principals.add(principal);
     }
 
@@ -105,7 +105,7 @@ public class ProgradePolicyEntry {
 
         if (neverImplies) {
             if (debug) {
-                ProgradePolicyDebugger.log("This entry never imply anything.");
+                ProGradePolicyDebugger.log("This entry never imply anything.");
             }
             return false;
         }
@@ -113,13 +113,13 @@ public class ProgradePolicyEntry {
         // codesource
         if (codeSource != null && pd.getCodeSource() != null) {
             if (debug) {
-                ProgradePolicyDebugger.log("Evaluate codesource...");
-                ProgradePolicyDebugger.log("      Policy codesource: " + codeSource.toString());
-                ProgradePolicyDebugger.log("      Active codesource: " + pd.getCodeSource().toString());
+                ProGradePolicyDebugger.log("Evaluate codesource...");
+                ProGradePolicyDebugger.log("      Policy codesource: " + codeSource.toString());
+                ProGradePolicyDebugger.log("      Active codesource: " + pd.getCodeSource().toString());
             }
             if (!codeSource.implies(pd.getCodeSource())) {
                 if (debug) {
-                    ProgradePolicyDebugger.log("Evaluation (codesource) failed.");
+                    ProGradePolicyDebugger.log("Evaluation (codesource) failed.");
                 }
                 return false;
             }
@@ -128,31 +128,31 @@ public class ProgradePolicyEntry {
         // principals
         if (!principals.isEmpty()) {
             if (debug) {
-                ProgradePolicyDebugger.log("Evaluate principals...");
+                ProGradePolicyDebugger.log("Evaluate principals...");
             }
             Principal[] pdPrincipals = pd.getPrincipals();
             if (pdPrincipals == null || pdPrincipals.length == 0) {
                 if (debug) {
-                    ProgradePolicyDebugger.log("Evaluation (principals) failed. There is no active principals.");
+                    ProGradePolicyDebugger.log("Evaluation (principals) failed. There is no active principals.");
                 }
                 return false;
             }
             if (debug) {
-                ProgradePolicyDebugger.log("Policy principals:");
-                for (ProgradePrincipal principal : principals) {
-                    ProgradePolicyDebugger.log("      " + principal.toString());
+                ProGradePolicyDebugger.log("Policy principals:");
+                for (ProGradePrincipal principal : principals) {
+                    ProGradePolicyDebugger.log("      " + principal.toString());
                 }
-                ProgradePolicyDebugger.log("Active principals:");
+                ProGradePolicyDebugger.log("Active principals:");
                 if (pdPrincipals.length == 0) {
-                    ProgradePolicyDebugger.log("      none");
+                    ProGradePolicyDebugger.log("      none");
                 }
                 for (int i = 0; i < pdPrincipals.length; i++) {
                     Principal principal = pdPrincipals[i];
-                    ProgradePolicyDebugger.log("      " + principal.toString());
+                    ProGradePolicyDebugger.log("      " + principal.toString());
                 }
             }
 
-            for (ProgradePrincipal principal : principals) {
+            for (ProGradePrincipal principal : principals) {
                 boolean contain = false;
                 for (int i = 0; i < pdPrincipals.length; i++) {
                     if (principal.hasWildcardClassName()) {
@@ -173,7 +173,7 @@ public class ProgradePolicyEntry {
                 }
                 if (!contain) {
                     if (debug) {
-                        ProgradePolicyDebugger.log("Evaluation (principals) failed.");
+                        ProGradePolicyDebugger.log("Evaluation (principals) failed.");
                     }
                     return false;
                 }
@@ -182,21 +182,21 @@ public class ProgradePolicyEntry {
 
         // permissions
         if (debug) {
-            ProgradePolicyDebugger.log("Evaluation codesource/principals passed.");
+            ProGradePolicyDebugger.log("Evaluation codesource/principals passed.");
             String grantOrDeny = (grant) ? "granting" : "denying";
             Enumeration<Permission> elements = permissions.elements();
             while (elements.hasMoreElements()) {
                 Permission nextElement = elements.nextElement();
-                ProgradePolicyDebugger.log("      " + grantOrDeny + " " + nextElement.toString());
+                ProGradePolicyDebugger.log("      " + grantOrDeny + " " + nextElement.toString());
             }
         }
 
         boolean toReturn = permissions.implies(permission);
         if (debug) {
             if (toReturn) {
-                ProgradePolicyDebugger.log("Needed permission found in this entry.");
+                ProGradePolicyDebugger.log("Needed permission found in this entry.");
             } else {
-                ProgradePolicyDebugger.log("Needed permission wasn't found in this entry.");
+                ProGradePolicyDebugger.log("Needed permission wasn't found in this entry.");
             }
         }
         return toReturn;

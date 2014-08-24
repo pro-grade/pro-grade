@@ -17,7 +17,7 @@
  * limitations under the License.
  * #L%
  */
-package net.sourceforge.prograde.generator;
+package net.sourceforge.prograde.sm;
 
 import java.security.AccessController;
 import java.security.Policy;
@@ -31,41 +31,20 @@ import java.security.PrivilegedAction;
 class SecurityActions {
 
     /**
-     * Returns a system property value using the specified <code>key</code>.
-     * 
-     * @param key
-     * @return
+     * Installs given policy object.
      */
-    static String getSystemProperty(final String key) {
+    static void setPolicy(final Policy policy) {
         final SecurityManager sm = System.getSecurityManager();
 
         if (sm != null) {
-            return AccessController.doPrivileged(new PrivilegedAction<String>() {
-                public String run() {
-                    return System.getProperty(key);
+            AccessController.doPrivileged(new PrivilegedAction<Void>() {
+                public Void run() {
+                    Policy.setPolicy(policy);
+                    return null;
                 }
             });
         } else {
-            return System.getProperty(key);
-        }
-    }
-
-    /**
-     * Returns the installed policy object.
-     * 
-     * @return
-     */
-    static Policy getPolicy() {
-        final SecurityManager sm = System.getSecurityManager();
-
-        if (sm != null) {
-            return AccessController.doPrivileged(new PrivilegedAction<Policy>() {
-                public Policy run() {
-                    return Policy.getPolicy();
-                }
-            });
-        } else {
-            return Policy.getPolicy();
+            Policy.setPolicy(policy);
         }
     }
 }

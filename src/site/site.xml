@@ -3,7 +3,7 @@
 <project name="pro-grade Java Policy With Deny Rules">
 
     <bannerLeft>
-        <name><![CDATA[<span class="color-highlight">pro-grade</span> policy]]></name>
+        <name><![CDATA[<span class="color-highlight">pro-grade</span> library]]></name>
         <href>http://pro-grade.sourceforge.net/</href>
     </bannerLeft>
 
@@ -23,21 +23,18 @@
                 href="http://sourceforge.net/projects/pro-grade/files/latest/download" />
             <item name="GitHub project" href="http://github.com/pro-grade/pro-grade/" />
         </links>
-
+<!-- 
         <breadcrumbs>
             <item name="pro-grade" href="/" />
         </breadcrumbs>
+ -->
 
-        <menu name="Main" inherit="top">
-            <item name="Home" href="./" />
-            <item name="GitHub project" href="http://github.com/pro-grade/pro-grade/" />
-            <item name="Release notes" href="ReleaseNotes-README.html" />
-        </menu>
-
-        <menu name="Policy generator" inherit="top">
-            <item name="About" href="java-permissions-helpers.html" />
-            <item name="Policy file generator" href="java-policy-file-generator.html" />
-            <item name="Permissions dumper" href="missing-permissions-dumper.html" />
+        <menu name="Documentation" inherit="top">
+            <item name="pro-grade library" href="./" />
+            <item name="ProGrade policy" href="pro-grade.html" />
+            <item name="Policy generator" href="policy-file-generator.html" />
+            <item name="Permissions debugger" href="missing-permissions-dumper.html" />
+            <item name="Release notes" href="ReleaseNotes-README.html" />            
         </menu>
     </body>
 
@@ -54,18 +51,14 @@
             <!-- <absoluteResourceURL>http://pro-grade.sourceforge.net/</absoluteResourceURL> -->
             <brand>
                 <!-- Brand text in top-left part of the site -->
-                <name>
-                <![CDATA[
-                    <span class="color-highlight">pro-grade</span>
-	            ]]>
-                </name>
+                <name><![CDATA[<span class="color-highlight">pro-grade</span> library]]></name>
                 <href>http://pro-grade.sourceforge.net/</href>
             </brand>
             <slogan>Java Policy With Grant And Deny Rules</slogan>
             <titleTemplate>%2$s | %1$s</titleTemplate>
             <toc>top</toc>
             <tocTopMax>6</tocTopMax>
-            <topNav>Policy generator</topNav>
+            <topNav>Documentation</topNav>
             <bottomNav maxSpan="9">
                 <column>Main</column>
                 <column>Policy generator</column>
