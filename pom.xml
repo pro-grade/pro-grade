@@ -112,12 +112,31 @@
 						<version>1.6</version>
 					</dependency>
 				</dependencies>
-				<!-- 
-				 -->
+				<!-- -->
 				<configuration>
 					<generateProjectInfo>false</generateProjectInfo>
 					<generateReports>false</generateReports>
 				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.4.1</version>
+				<configuration>
+					<descriptorRefs>
+						<descriptor>bin</descriptor>
+						<descriptor>src</descriptor>
+					</descriptorRefs>
+					<finalName>${project.artifactId}-${project.version}</finalName>
+				</configuration>
+				<executions>
+					<execution>
+						<id>dist</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
