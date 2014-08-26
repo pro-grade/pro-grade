@@ -25,6 +25,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FilePermission;
 import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.SerializablePermission;
 import java.lang.reflect.Constructor;
@@ -32,6 +34,7 @@ import java.lang.reflect.ReflectPermission;
 import java.net.NetPermission;
 import java.net.SocketPermission;
 import java.net.URL;
+import java.security.AccessControlException;
 import java.security.AllPermission;
 import java.security.CodeSource;
 import java.security.KeyStore;
@@ -71,14 +74,48 @@ public class ProGradePolicy extends Policy {
     private List<ProGradePolicyEntry> allGrantEntries;
     private List<ProGradePolicyEntry> allDenyEntries;
     private List<ParsedPolicy> parsedPolicies;
-    private boolean debug = false;
-    private boolean expandProperties;
-    private File file;
+    private final boolean debug;
+    private final boolean expandProperties;
+    private final File file;
+    private final boolean skipDefaultPolicies;
 
     /**
      * Constructor of ProgradePolicyFile.
      */
     public ProGradePolicy() {
+        String debugProperty = null;
+        try {
+            debugProperty = SecurityActions.getSystemProperty("java.security.debug");
+        } catch (AccessControlException ace) {
+            System.err.println("Unable to check if policy debugging is enabled.");
+            ace.printStackTrace();
+        }
+        boolean debugPolicy = false;
+        if (debugProperty != null) {
+            String[] splitDebugProperty = debugProperty.split(",");
+            for (int i = 0; i < splitDebugProperty.length; i++) {
+                String split = splitDebugProperty[i].trim();
+                split = split.replaceAll("\"", "");
+                // only these types of debug are connected with policy
+                if (split.equals("all") || split.equals("policy")) {
+                    debugPolicy = true;
+                    break;
+                }
+            }
+        }
+        debug = debugPolicy;
+        expandProperties = Boolean.parseBoolean(Security.getProperty("policy.expandProperties"));
+        String policyFile = SecurityActions.getSystemProperty("java.security.policy");
+        if (policyFile != null) {
+            skipDefaultPolicies = policyFile.startsWith("=");
+            if (skipDefaultPolicies) {
+                policyFile = policyFile.substring(1);
+            }
+            file = new File(policyFile);
+        } else {
+            skipDefaultPolicies = false;
+            file = null;
+        }
         refresh();
     }
 
@@ -87,42 +124,18 @@ public class ProGradePolicy extends Policy {
      */
     @Override
     public void refresh() {
-        String debugProperty = SecurityActions.getSystemProperty("java.security.debug");
-        debug = false;
-        if (debugProperty != null) {
-            String[] splitDebugProperty = debugProperty.split(",");
-            for (int i = 0; i < splitDebugProperty.length; i++) {
-                String split = splitDebugProperty[i].trim();
-                split = split.replaceAll("\"", "");
-                // only these types of debug are connected with policy
-                if (split.equals("all") || split.equals("policy")) {
-                    debug = true;
-                    break;
-                }
-            }
-        }
-
-        file = null;
-
-        String policy = SecurityActions.getSystemProperty("java.security.policy");
-        if (policy != null) {
-            final boolean twoEquals = policy.startsWith("=");
-            if (twoEquals) {
-                policy = policy.substring(1);
-            }
-            file = new File(policy);
+        if (file != null) {
             FileReader fr = null;
             try {
                 fr = new FileReader(file);
             } catch (FileNotFoundException e) {
                 System.err.println("Unable to read policy file content. Exception message: " + e.getMessage());
             }
-            loadPolicy(fr, Boolean.parseBoolean(Security.getProperty("policy.expandProperties")), twoEquals);
+            loadPolicy(fr, skipDefaultPolicies);
         }
     }
 
-    protected void loadPolicy(final Reader reader, final boolean expandProps, final boolean exclusiveMode) {
-        expandProperties = expandProps;
+    protected void loadPolicy(final Reader reader, final boolean exclusiveMode) {
 
         allGrantEntries = new ArrayList<ProGradePolicyEntry>();
         allDenyEntries = new ArrayList<ProGradePolicyEntry>();
@@ -131,10 +144,15 @@ public class ProGradePolicy extends Policy {
 
         if (reader != null) {
             try {
-                file = null;
                 parsedPolicies.add(new Parser(debug).parse(reader));
             } catch (Exception ex) {
                 System.err.println("Unbale to parse policy. Exception message: " + ex.getMessage());
+            } finally {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
@@ -209,7 +227,11 @@ public class ProGradePolicy extends Policy {
     private void addParsedPolicyEntries(List<ParsedPolicyEntry> parsedEntries, List<ProGradePolicyEntry> entries,
             KeyStore keystore, boolean grant) throws Exception {
         for (ParsedPolicyEntry p : parsedEntries) {
-            entries.add(initializePolicyEntry(p, keystore, grant));
+            try {
+                entries.add(initializePolicyEntry(p, keystore, grant));
+            } catch (Exception e) {
+                System.err.println("Unable to initialize policy entry: " + e.getMessage());
+            }
         }
     }
 
@@ -763,30 +785,35 @@ public class ProGradePolicy extends Policy {
         int counter = 1;
         String policyUrl = null;
         while ((policyUrl = Security.getProperty("policy.url." + counter)) != null) {
-            if (policyUrl.startsWith("file:")) {
-                try {
-                    policyUrl = expandStringWithProperty(policyUrl.substring(5));
-                } catch (Exception ex) {
-                    System.err.println("Expanding filepath in policy policy.url." + counter + "=file:" + policyUrl
-                            + " failed. Exception message: " + ex.getMessage());
-                    counter++;
-                    continue;
+            try {
+                policyUrl = expandStringWithProperty(policyUrl);
+            } catch (Exception ex) {
+                System.err.println("Expanding filepath in policy policy.url." + counter + "=" + policyUrl
+                        + " failed. Exception message: " + ex.getMessage());
+                counter++;
+                continue;
+            }
+            ParsedPolicy p = null;
+            InputStreamReader reader = null;
+            try {
+                reader = new InputStreamReader(new URL(policyUrl).openStream(), "UTF-8");
+                p = new Parser(debug).parse(reader);
+                if (p != null) {
+                    list.add(p);
+                } else {
+                    System.err.println("Parsed policy policy.url." + counter + "=" + policyUrl + " is null");
                 }
-                ParsedPolicy p = null;
-                try {
-                    p = new Parser(debug).parse(new File(policyUrl));
-                    if (p != null) {
-                        list.add(p);
-                    } else {
-                        System.err.println("Parsed policy policy.url." + counter + "=file:" + policyUrl + " is null");
+            } catch (Exception ex) {
+                System.err.println("Policy policy.url." + counter + "=" + policyUrl
+                        + " wasn't successfully parsed. Exception message: " + ex.getMessage());
+            } finally {
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-                } catch (Exception ex) {
-                    System.err.println("Policy policy.url." + counter + "=file:" + policyUrl
-                            + " wasn't successfully parsed. Exception message: " + ex.getMessage());
                 }
-            } else {
-                System.err.println("Sorry, this policy works only with local text policy file! "
-                        + "This policy couldn't be loaded: policy.url." + counter + "=" + policyUrl);
             }
             counter++;
         }

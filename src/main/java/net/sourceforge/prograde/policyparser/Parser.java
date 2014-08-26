@@ -88,7 +88,12 @@ public class Parser {
             ProGradePolicyDebugger.log("Parsing policy " + file.getCanonicalPath());
         }
 
-        return parse(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+        final InputStreamReader reader = new InputStreamReader(new FileInputStream(file), "UTF-8");
+        try {
+            return parse(reader);
+        } finally {
+            reader.close();
+        }
     }
 
     /**

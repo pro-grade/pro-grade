@@ -24,6 +24,8 @@ import java.security.Permission;
 import java.security.Policy;
 import java.security.ProtectionDomain;
 
+import net.sourceforge.prograde.policy.ProGradePolicy;
+
 /**
  * Policy wrapper for debug purposes. It's main goal is to report denied permissions to a {@link DeniedPermissionListener}
  * instance. If a checked permission is not an {@link AllPermission} instance, then implementation of the
@@ -34,6 +36,11 @@ import java.security.ProtectionDomain;
  * @author Josef Cacek
  */
 public final class NotifyAndAllowPolicy extends Policy {
+
+    /**
+     * System property name for setting generated policy file path when the file is not specified in the constructor.
+     */
+    public static final String PROGRADE_USE_OWN_POLICY = "prograde.use.own.policy";
 
     private final Policy wrappedPolicy;
     private final DeniedPermissionListener listener;
@@ -53,7 +60,13 @@ public final class NotifyAndAllowPolicy extends Policy {
      *        {@link PrintDeniedPermissions} instance is used
      */
     public NotifyAndAllowPolicy(Policy policy, DeniedPermissionListener dpListener) {
-        wrappedPolicy = policy != null ? policy : SecurityActions.getPolicy();
+        if (policy == null) {
+            wrappedPolicy = policy;
+        } else if (Boolean.parseBoolean(SecurityActions.getSystemProperty(PROGRADE_USE_OWN_POLICY))) {
+            wrappedPolicy = new ProGradePolicy();
+        } else {
+            wrappedPolicy = SecurityActions.getPolicy();
+        }
         listener = dpListener != null ? dpListener : new PrintDeniedPermissions();
     }
 
