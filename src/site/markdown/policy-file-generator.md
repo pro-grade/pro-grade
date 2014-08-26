@@ -21,7 +21,7 @@ Other steps are optional:
 
 ```Shell
 java \
-    -Djava.security.manager=net.sourceforge.prograde.generator.PolicyFileGeneratorJSM \
+    -Djava.security.manager=net.sourceforge.prograde.sm.PolicyFileGeneratorJSM \
     -Djava.security.policy==/path/to/initial.policy \
     -Dprograde.generated.policy=/tmp/generated.policy \
     ...

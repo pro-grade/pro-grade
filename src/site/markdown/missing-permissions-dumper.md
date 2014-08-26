@@ -18,7 +18,7 @@ Other steps are optional:
 
 ```Shell
 java \
-    -Djava.security.manager=net.sourceforge.prograde.generator.DumpMissingPermissionsJSM \
+    -Djava.security.manager=net.sourceforge.prograde.sm.DumpMissingPermissionsJSM \
     -Djava.security.policy==/path/to/initial.policy \
     ...
 ```
