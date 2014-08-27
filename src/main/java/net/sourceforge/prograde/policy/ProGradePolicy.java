@@ -609,23 +609,6 @@ public class ProGradePolicy extends Policy {
                 // make path readable for specific OS
                 String path = url.getFile().replace('/', File.separatorChar);
 
-                File f;
-                if (path.endsWith("*")) {
-                    path = path.substring(0, path.length() - 1) + "-";
-                    f = new File(path);
-                    path = f.getCanonicalPath();
-                    path = path.substring(0, path.length() - 1) + "*";
-                } else {
-                    f = new File(path);
-                    path = f.getCanonicalPath();
-                }
-                if (!path.startsWith("/")) {
-                    path = "/" + path;
-                }
-                if (!path.endsWith("/") && f.isDirectory()) {
-                    path = path + "/";
-                }
-
                 path = encodeSpecialCharacters(path);
 
                 path = path.replace(File.separatorChar, '/');
