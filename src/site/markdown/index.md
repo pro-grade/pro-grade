@@ -33,13 +33,18 @@ Standard SecurityManager with possibility of using **deny** rules.
 
 #### ProGrade Policy file example
 
-```
+```Java
+// following entry can be ommited because "deny" value is the default
+priority "deny";
+
+// grant full access to /tmp folder
 grant {
-	permission java.io.FilePermission "/tmp/*", "read,write";
+	permission java.io.FilePermission "/tmp/-", "read,write";
 };
 
+// deny write access for a single subfolder in /tmp
 deny {
-	permission java.io.FilePermission "/tmp/static/*", "write";
+	permission java.io.FilePermission "/tmp/static/-", "write";
 };
 ```
 

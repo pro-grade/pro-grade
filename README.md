@@ -1,15 +1,24 @@
-# pro-grade
+# pro-grade library
 
-ProGrade means "Policy Rules Of GRanting And DEnying" and it is maven project for using Java Security Policy with denying rules.
+The pro-grade library provides implementation of custom Java Security Managers and Security Policies. The main component is a Java Security Policy implementation with denying rules as an addition to standard grant rules.
+
+*ProGrade = "Policy Rules Of GRanting And DEnying".*
 
 ## Build project
 Simply use:
 
 	$ mvn clean install
 
-## Add ProGrade to your application
+## Run your App with ProGrade Security manager
 
-Only thing what you need to do is running your application with net.sourceforge.prograde.sm.ProgradeSecurityManager. ProgradeSecurityManager sets ProgradePolicyFile as Policy of the application.
+Only thing which you need to do is to add standard java properties for enabling security manager:
+
+```Shell
+java \
+     "-Djava.security.manager=net.sourceforge.prograde.sm.ProGradeJSM" \
+     "-Djava.security.policy=/path/to/your-app-prograde.policy" \
+     ...
+```
 
 ## Work with denying rules
 
@@ -17,15 +26,29 @@ Only thing what you need to do is running your application with net.sourceforge.
 
 It is a quite similar as standard policy in Java. It also works with policy file with grant entries, but you can also write deny entries - it uses same definitions as grant entries but meaning of them is opposite. For denying rules use keyword "deny".
 
-You can take a look at [prograde testsuite](https://github.com/pro-grade/progradeTests). It contains some configuration of policy files (for tests) and you'll look how exactly using denying rules.
+You can take a look into [policy files in pro-grade testsuite](https://github.com/pro-grade/progradeTests/tree/master/src/test/resources/policyfiles).
 
 ### Priority entry
 
-You can set priority on "grant" or "deny". Priority say what rules is stronger when grant and deny are in conflict. If you use deny priority, all actions are as default denied. If you use grant priority, all actions are as default granted. It means that standard Java uses as default "deny" priority.
+You can set *`priority`* on `"grant"` or `"deny"`. The `priority` says what rules is stronger when grant and deny are in conflict. If you use deny priority, all actions are as default denied. If you use grant priority, all actions are as default granted. It means that standard Java uses as 
+default `"deny"` priority.
 
-Priority entry has only one occur in policy file and it is loaded only from first loaded policy file and use for all security policies.
+### Sample policy
 
-For setting priority use keyword "priority" and one of options "grant" or "deny".
+```Java
+// following entry can be ommited because "deny" value is the default
+priority "deny";
+
+// grant full access to /tmp folder
+grant {
+	permission java.io.FilePermission "/tmp/-", "read,write";
+};
+
+// deny write access for a single subfolder in /tmp
+deny {
+	permission java.io.FilePermission "/tmp/static/-", "write";
+};
+```
 
 ## License
 
