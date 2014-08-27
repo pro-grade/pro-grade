@@ -22,7 +22,6 @@ package net.sourceforge.prograde.policy;
 import java.awt.AWTPermission;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FilePermission;
 import java.io.FileReader;
 import java.io.IOException;
@@ -41,7 +40,6 @@ import java.security.KeyStore;
 import java.security.Permission;
 import java.security.Policy;
 import java.security.ProtectionDomain;
-import java.security.Security;
 import java.security.SecurityPermission;
 import java.security.UnresolvedPermission;
 import java.security.cert.Certificate;
@@ -73,7 +71,6 @@ public class ProGradePolicy extends Policy {
     private Priority priority; // true for grant, false for deny
     private List<ProGradePolicyEntry> allGrantEntries;
     private List<ProGradePolicyEntry> allDenyEntries;
-    private List<ParsedPolicy> parsedPolicies;
     private final boolean debug;
     private final boolean expandProperties;
     private final File file;
@@ -104,7 +101,7 @@ public class ProGradePolicy extends Policy {
             }
         }
         debug = debugPolicy;
-        expandProperties = Boolean.parseBoolean(Security.getProperty("policy.expandProperties"));
+        expandProperties = Boolean.parseBoolean(SecurityActions.getSecurityProperty("policy.expandProperties"));
         String policyFile = SecurityActions.getSystemProperty("java.security.policy");
         if (policyFile != null) {
             skipDefaultPolicies = policyFile.startsWith("=");
@@ -124,95 +121,93 @@ public class ProGradePolicy extends Policy {
      */
     @Override
     public void refresh() {
+        FileReader fr = null;
         if (file != null) {
-            FileReader fr = null;
             try {
                 fr = new FileReader(file);
-            } catch (FileNotFoundException e) {
-                System.err.println("Unable to read policy file content. Exception message: " + e.getMessage());
+            } catch (Exception e) {
+                System.err.println("Unable to read policy file " + file + ": " + e.getMessage());
             }
-            loadPolicy(fr, skipDefaultPolicies);
         }
+        loadPolicy(fr, skipDefaultPolicies);
     }
 
     protected void loadPolicy(final Reader reader, final boolean exclusiveMode) {
+        final List<ParsedPolicy> parsedPolicies = new ArrayList<ParsedPolicy>();
 
-        allGrantEntries = new ArrayList<ProGradePolicyEntry>();
-        allDenyEntries = new ArrayList<ProGradePolicyEntry>();
-        priority = null;
-        parsedPolicies = new ArrayList<ParsedPolicy>();
-
-        if (reader != null) {
-            try {
-                parsedPolicies.add(new Parser(debug).parse(reader));
-            } catch (Exception ex) {
-                System.err.println("Unbale to parse policy. Exception message: " + ex.getMessage());
-            } finally {
+        final List<ProGradePolicyEntry> newGrantEntries = new ArrayList<ProGradePolicyEntry>();
+        final List<ProGradePolicyEntry> newDenyEntries = new ArrayList<ProGradePolicyEntry>();
+        Priority newPriority = null;
+        try {
+            if (reader != null) {
                 try {
-                    reader.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    parsedPolicies.add(new Parser(debug).parse(reader));
+                } catch (Exception ex) {
+                    System.err.println("Unbale to parse policy. Exception message: " + ex.getMessage());
+                } finally {
+                    try {
+                        reader.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
-        }
 
-        // parse policies specified in java.security when not in exclusive mode (==)
-        if (!exclusiveMode) {
-            try {
-                parsedPolicies.addAll(getJavaPolicies());
-            } catch (Exception ex) {
-                System.err.println("Static policy wasn't successfully loaded! Exception message: " + ex.getMessage());
-            }
-        }
-
-        if (!exclusiveMode && parsedPolicies.isEmpty()) {
-            try {
-                initializeStaticPolicy();
-            } catch (Exception ex) {
-                System.err.println("Static policy wasn't successfully loaded! Exception message: " + ex.getMessage());
+            // parse policies specified in java.security when not in exclusive mode (==)
+            if (!exclusiveMode) {
+                try {
+                    parsedPolicies.addAll(getJavaPolicies());
+                } catch (Exception ex) {
+                    System.err.println("Static policy wasn't successfully loaded! Exception message: " + ex.getMessage());
+                }
             }
 
-        } else {
-            try {
-                initializePolicy();
-            } catch (Exception ex) {
-                System.err.println("Policy wasn't successfully initialized! Exception message: " + ex.getMessage());
+            if (!exclusiveMode && parsedPolicies.isEmpty()) {
+                try {
+                    initializeStaticPolicy(newGrantEntries);
+                } catch (Exception ex) {
+                    System.err.println("Static policy wasn't successfully loaded! Exception message: " + ex.getMessage());
+                }
+
+            } else {
+                try {
+                    // initializePolicy
+                    if (parsedPolicies.isEmpty()) {
+                        throw new Exception("Policy wasn't initialized!");
+                    }
+                    // set priority - priority is set according first loaded policy
+                    newPriority = null;
+                    for (ParsedPolicy pp : parsedPolicies) {
+                        newPriority = pp.getPriority();
+                        if (newPriority != null)
+                            break;
+                    }
+                    if (newPriority == null)
+                        newPriority = Priority.DEFAULT;
+
+                    for (ParsedPolicy p : parsedPolicies) {
+                        KeyStore keystore = null;
+                        try {
+                            keystore = createKeystore(p.getKeystore(), p.getKeystorePasswordURL(), file);
+                        } catch (Exception ex) {
+                            System.err.println("Keystore wasn't successfully initialized! Exception message: "
+                                    + ex.getMessage());
+                        }
+
+                        // add grant and deny policy entry
+                        addParsedPolicyEntries(p.getGrantEntries(), newGrantEntries, keystore, true);
+                        addParsedPolicyEntries(p.getDenyEntries(), newDenyEntries, keystore, false);
+                    }
+                } catch (Exception ex) {
+                    System.err.println("Policy wasn't successfully initialized! Exception message: " + ex.getMessage());
+                }
             }
+        } finally {
+            allGrantEntries = newGrantEntries;
+            allDenyEntries = newDenyEntries;
+            priority = newPriority;
         }
 
-    }
-
-    /**
-     * Private method which initializes policy from policy file.
-     * 
-     * @throws Exception when there was any problem during initializing policy
-     */
-    private void initializePolicy() throws Exception {
-        if (parsedPolicies.isEmpty()) {
-            throw new Exception("Policy wasn't initialized!");
-        }
-        // set priority - priority is set according first loaded policy
-        priority = null;
-        for (ParsedPolicy pp : parsedPolicies) {
-            priority = pp.getPriority();
-            if (priority != null)
-                break;
-        }
-        if (priority == null)
-            priority = Priority.DEFAULT;
-
-        for (ParsedPolicy p : parsedPolicies) {
-            KeyStore keystore = null;
-            try {
-                keystore = createKeystore(p.getKeystore(), p.getKeystorePasswordURL(), file);
-            } catch (Exception ex) {
-                System.err.println("Keystore wasn't successfully initialized! Exception message: " + ex.getMessage());
-            }
-
-            // add grant and deny policy entry
-            addParsedPolicyEntries(p.getGrantEntries(), allGrantEntries, keystore, true);
-            addParsedPolicyEntries(p.getDenyEntries(), allDenyEntries, keystore, false);
-        }
     }
 
     /**
@@ -784,7 +779,7 @@ public class ProGradePolicy extends Policy {
 
         int counter = 1;
         String policyUrl = null;
-        while ((policyUrl = Security.getProperty("policy.url." + counter)) != null) {
+        while ((policyUrl = SecurityActions.getSecurityProperty("policy.url." + counter)) != null) {
             try {
                 policyUrl = expandStringWithProperty(policyUrl);
             } catch (Exception ex) {
@@ -826,7 +821,7 @@ public class ProGradePolicy extends Policy {
      * 
      * @throws Exception when there was any problem during initializing static policy
      */
-    private void initializeStaticPolicy() throws Exception {
+    private void initializeStaticPolicy(List<ProGradePolicyEntry> grantEntriesList) throws Exception {
 
         // grant codeBase "file:${{java.ext.dirs}}/*" {
         // permission java.security.AllPermission;
@@ -837,7 +832,7 @@ public class ProGradePolicy extends Policy {
         CodeSource cs = new CodeSource(adaptURL(url), certificates);
         p1.setCodeSource(cs);
         p1.addPermission(new AllPermission());
-        allGrantEntries.add(p1);
+        grantEntriesList.add(p1);
 
         // grant {
         // permission java.lang.RuntimePermission "stopThread";
@@ -884,7 +879,7 @@ public class ProGradePolicy extends Policy {
         p2.addPermission(new PropertyPermission("java.vm.version", "read"));
         p2.addPermission(new PropertyPermission("java.vm.vendor", "read"));
         p2.addPermission(new PropertyPermission("java.vm.name", "read"));
-        allGrantEntries.add(p2);
+        grantEntriesList.add(p2);
 
     }
 

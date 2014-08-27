@@ -21,6 +21,7 @@ package net.sourceforge.prograde.policy;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.security.Security;
 
 /**
  * Helper class to keep privileged actions on a single place.
@@ -46,6 +47,27 @@ class SecurityActions {
             });
         } else {
             return System.getProperty(key);
+        }
+    }
+
+    /**
+     * Returns a security property value using the specified <code>key</code>.
+     * 
+     * @param key
+     * @see Security#getProperty(String)
+     * @return
+     */
+    static String getSecurityProperty(final String key) {
+        final SecurityManager sm = System.getSecurityManager();
+
+        if (sm != null) {
+            return AccessController.doPrivileged(new PrivilegedAction<String>() {
+                public String run() {
+                    return Security.getProperty(key);
+                }
+            });
+        } else {
+            return Security.getProperty(key);
         }
     }
 }
