@@ -32,6 +32,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.ReflectPermission;
 import java.net.NetPermission;
 import java.net.SocketPermission;
+import java.net.URI;
 import java.net.URL;
 import java.security.AccessControlException;
 import java.security.AllPermission;
@@ -603,18 +604,7 @@ public class ProGradePolicy extends Policy {
      */
     private URL adaptURL(URL url) throws Exception {
         if (url != null && url.getProtocol().equals("file")) {
-            String host = url.getHost();
-            // if it is local file
-            if (host == null || host.equals("") || host.equals("~") || host.equalsIgnoreCase("localhost")) {
-                // make path readable for specific OS
-                String path = url.getFile().replace('/', File.separatorChar);
-
-                path = encodeSpecialCharacters(path);
-
-                path = path.replace(File.separatorChar, '/');
-
-                return new URL("file", "", path);
-            }
+            url = new URL(fixEncodedURI(url.toURI().toASCIIString()));
         }
         return url;
     }
@@ -866,50 +856,30 @@ public class ProGradePolicy extends Policy {
 
     }
 
+    // TODO Do we need platform dependent file separator?
     /**
-     * Encode some special characters in path to CodeSource encoding for right working of CodeSource implies method. These
-     * method should be extended.
+     * Gets {@link URI#toASCIIString()} as an input and the escaped octets %XX are converted to lower case (because of the
+     * Oracle PolicyFile implementation of CodeSource comparing).
      * 
-     * It contain czech symbols: á, č, ď, é, ě, í, ň, ó, ř, š, ť, ú, ů, ý, ž and symbols #, %, ", =, §, <, > and space.
-     * 
-     * Symbols !,
-     * 
-     * @, $, &, *, (, ), -, +, ' and comma don't need encode.
-     * 
-     * @param path path to encoding
-     * @return encoded path
+     * @param encodedUri
+     * @return
      */
-    protected String encodeSpecialCharacters(String path) {
-        // this need to be first
-        path = path.replaceAll("%", "%25");
-
-        // czech symbols
-        path = path.replaceAll("á", "%c3%a1");
-        path = path.replaceAll("č", "%c4%8d");
-        path = path.replaceAll("ď", "%c4%8f");
-        path = path.replaceAll("é", "%c3%a9");
-        path = path.replaceAll("ě", "%c4%9b");
-        path = path.replaceAll("í", "%c3%ad");
-        path = path.replaceAll("ň", "%c5%88");
-        path = path.replaceAll("ó", "%c3%b3");
-        path = path.replaceAll("ř", "%c5%99");
-        path = path.replaceAll("š", "%c5%a1");
-        path = path.replaceAll("ť", "%c5%a5");
-        path = path.replaceAll("ú", "%c3%ba");
-        path = path.replaceAll("ů", "%c5%af");
-        path = path.replaceAll("ý", "%c3%bd");
-        path = path.replaceAll("ž", "%c5%be");
-
-        // another symbols
-        path = path.replaceAll("#", "%23");
-        path = path.replaceAll("\"", "%22");
-        path = path.replaceAll("=", "%3d");
-        path = path.replaceAll("§", "%c2%a7");
-        path = path.replaceAll("<", "%3c");
-        path = path.replaceAll(">", "%3e");
-        path = path.replaceAll(" ", "%20");
-
-        return path;
+    private static String fixEncodedURI(final String encodedUri) {
+        if (encodedUri == null) {
+            return null;
+        }
+        final StringBuilder sb = new StringBuilder();
+        int lastPercIdx = -3; // we will check position-2
+        for (int i = 0, n = encodedUri.length(); i < n; i++) {
+            char c = encodedUri.charAt(i);
+            if (c == '%') {
+                lastPercIdx = i;
+            } else if (lastPercIdx >= i - 2 && c >= 'A' && c <= 'F') {
+                c = (char) (c - 'A' + 'a');
+            }
+            sb.append(c);
+        }
+        return sb.toString();
     }
 
     /**
