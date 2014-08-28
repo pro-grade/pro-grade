@@ -30,12 +30,13 @@ import java.security.ProtectionDomain;
 public final class PrintDeniedPermissions implements DeniedPermissionListener {
 
     private final PrintStream printStream;
+    private final boolean includeCodeSource;
 
     /**
      * Constructor with default {@link PrintStream} ({@link System#err}).
      */
     public PrintDeniedPermissions() {
-        this(null);
+        this(null, true);
     }
 
     /**
@@ -43,8 +44,9 @@ public final class PrintDeniedPermissions implements DeniedPermissionListener {
      * 
      * @param printStream may be null (may be null)
      */
-    public PrintDeniedPermissions(final PrintStream printStream) {
+    public PrintDeniedPermissions(final PrintStream printStream, final boolean includeCodeSource) {
         this.printStream = (printStream == null ? System.err : printStream);
+        this.includeCodeSource = includeCodeSource;
     }
 
     /*
@@ -53,8 +55,15 @@ public final class PrintDeniedPermissions implements DeniedPermissionListener {
      * @see net.sourceforge.prograde.generator.DeniedPermissionListener#permissionDenied(java.security.Permission,
      * java.security.ProtectionDomain)
      */
-    public void permissionDenied(ProtectionDomain pd, Permission perm) {
-        printStream.println(">> Denied permission " + perm.getClass() + " " + perm.getName() + " " + perm.getActions());
+    public void permissionDenied(final ProtectionDomain pd, final Permission perm) {
+        final StringBuilder sb = new StringBuilder(">> Denied permission ");
+        sb.append(perm.getClass().getName()).append(" \"") //
+                .append(perm.getName()).append("\", \"") //
+                .append(perm.getActions()).append("\";");
+        if (includeCodeSource) {
+            sb.append("\n>>> CodeSource: " + pd.getCodeSource());
+        }
+        printStream.println(sb);
     }
 
     /*
