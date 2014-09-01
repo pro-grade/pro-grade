@@ -54,6 +54,18 @@
                 <name><![CDATA[<span class="color-highlight">pro-grade</span> library]]></name>
                 <href>http://pro-grade.sourceforge.net/</href>
             </brand>
+            <pages>
+                <index>
+                    <!-- index.html sections (examples of all available sections) -->
+                    <titleTemplate>pro-grade library</titleTemplate>
+                    <toc>false</toc>
+                    <sections>
+                        <body />
+                        <columns>2</columns>
+                        <body />
+                    </sections>
+                </index>
+            </pages>
             <slogan>Java Policy With Grant And Deny Rules</slogan>
             <titleTemplate>%2$s | %1$s</titleTemplate>
             <toc>top</toc>
@@ -66,7 +78,7 @@
             </bottomNav>
             <bottomDescription>
             <![CDATA[
-                <span class="color-highlight">pro-grade</span> is a custom java.security.Policy implementation
+                <span class="color-highlight">pro-grade</span> library implements custom java.security.Policy
                 with support for <strong>deny</strong> entries.
             ]]>
             </bottomDescription>

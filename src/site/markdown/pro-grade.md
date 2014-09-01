@@ -76,11 +76,9 @@ or it doesn't contain any `deny` entry which implies the permission.***
 
 ### Decision making table
 
-The checked permission ...| priority "deny"; (default) | priority "grant";
---------------------------|---------------------------|-----------------
-is implied neither from any `grant` nor from `deny` entry in policy file | denied | granted
-is implied from a `grant` entry but not from a `deny` entry in policy file | granted | granted
-is implied from a `deny` entry but not from a `grant` entry in policy file | denied | denied
-is implied from both `grant` and `deny` entries in policy file | denied | granted
-
-## Limitations
+The checked permission is implied ...| priority "deny"; (default) | priority "grant";
+-------------------------------------|----------------------------|-----------------
+neither from any `grant` nor from `deny` entry in policy file | denied | granted
+from a `grant` entry but not from a `deny` entry in policy file | granted | granted
+from a `deny` entry but not from a `grant` entry in policy file | denied | denied
+from both `grant` and `deny` entries in policy file | denied | granted

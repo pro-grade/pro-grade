@@ -1,4 +1,4 @@
-# ![pro-grade](images/prograde.png) pro-grade
+![pro-grade](images/prograde.png)
 
 The **pro-grade** library provides implementation of custom Java Security Managers and Security Policies.
 The main component is a *Java Security Policy implementation with denying rules* as an addition to standard
@@ -23,18 +23,23 @@ The library contains following security manager implementations:
  * policy generator
  * permissions debugger
 
-### ProGrade Policy - Let's deny it!
+---
 
-Class name: **`net.sourceforge.prograde.sm.ProGradeJSM`**
+### ProGrade Policy
 
-Standard SecurityManager with possibility of using **deny** rules. 
+*Let's deny it!*
+
+**`net.sourceforge.prograde.sm.ProGradeJSM`**
+
+Extension to standard Java Security Manager which adds possibility of using **deny** rules.
+
+Utilize the possibility of better control what's granted to whom.
 
 [Read more ...](pro-grade.html)
 
-#### ProGrade Policy file example
+#### ProGrade Policy example
 
 ```Java
-// following entry can be ommited because "deny" value is the default
 priority "deny";
 
 // grant full access to /tmp folder
@@ -48,22 +53,32 @@ deny {
 };
 ```
 
-### Generator - Create policy files
+### Policy Generator
 
-Class name: **`net.sourceforge.prograde.sm.PolicyFileGeneratorJSM`**
+*Create policy files without pain!*
 
-Policy file generator which creates policy files. The generated policies can be used together with
+**`net.sourceforge.prograde.sm.PolicyFileGeneratorJSM`**
+
+Policy file generator which creates Java policy files. The generated policies can be used together with
 the standard SecurityManager or pro-grade.
 
 [Read more ...](policy-file-generator.html)
 
-### Debugger - Print missing permissions
+### Policy Debugger
 
-Class name: **`net.sourceforge.prograde.sm.DumpMissingPermissionsJSM`**
+*Show me, what's missing in my policy!*
 
-Prints missing permissions to error stream. 
+**`net.sourceforge.prograde.sm.DumpMissingPermissionsJSM`**
+
+Simple and comfortable way to find, what permissions are missing in your policy files.
+Stop fighting with denied permissions one by one using obsolete `-Djava.security.debug` property.
+And print only the information which really counts. 
+
+This Security Manager prints permissions missing in your policy to error stream.
 
 [Read more ...](missing-permissions-dumper.html)
+
+--- 
 
 ## Usage
 
