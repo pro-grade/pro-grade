@@ -22,3 +22,10 @@ java \
     -Djava.security.policy==/path/to/initial.policy \
     ...
 ```
+
+## Use ProGrade as the underlying policy
+
+The standard Java Policy implementation is used as the underlying implementation for the missing permissions dumper.
+You can use ProGrade policy instead when you set **`prograde.use.own.policy`** system property to true.
+
+    -Dprograde.use.own.policy=true

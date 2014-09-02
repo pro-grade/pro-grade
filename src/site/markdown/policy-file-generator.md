@@ -41,3 +41,10 @@ java \
     -Djava.security.policy==/tmp/generated.policy \
     ...
 ``` 
+
+## ProGrade as the underlying policy
+
+The standard Java Policy implementation is used as the underlying implementation for the policy file generator.
+You can use ProGrade policy instead when you set **`prograde.use.own.policy`** system property to true.
+
+    -Dprograde.use.own.policy=true
