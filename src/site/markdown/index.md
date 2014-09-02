@@ -1,7 +1,7 @@
 ![pro-grade](images/prograde.png)
 
 The **pro-grade** library provides implementation of custom Java Security Managers and Security Policies.
-The main component is a *Java Security Policy implementation with denying rules* as an addition to standard
+The main component is the *Java Security Policy implementation with denying rules* - extension to standard
 *grant* rules.
 
 Download the [latest binaries](http://sourceforge.net/projects/pro-grade/files/latest/download)
@@ -9,9 +9,9 @@ from the [SourceForge project pages](http://sourceforge.net/projects/pro-grade/)
 
 ## Security Managers
 
-**pro-grade** library uses custom Java Security Managers to install Security Policy objects by a standard Java way.
+**pro-grade** library uses custom Java Security Managers to install Security Policy objects by standard Java way.
 
-Just use right value for  **`java.security.manager`** system property and add it to java arguments. E.g.
+Just use the right value for  **`java.security.manager`** system property and add it to java arguments. E.g.
 
 ```Shell
 java -Djava.security.manager=net.sourceforge.prograde.sm.DumpMissingPermissionsJSM ...
@@ -31,9 +31,9 @@ The library contains following security manager implementations:
 
 **`net.sourceforge.prograde.sm.ProGradeJSM`**
 
-Extension to standard Java Security Manager which adds possibility of using **deny** rules.
+Extension to standard Java Security Manager which adds **deny** rules to policy files.
 
-Utilize the possibility of better control what's granted to whom.
+Don't let the grant rules overgrow your application. Utilize the possibility of better control what's granted to whom.
 
 [Read more ...](pro-grade.html)
 
@@ -60,7 +60,7 @@ deny {
 **`net.sourceforge.prograde.sm.PolicyFileGeneratorJSM`**
 
 Policy file generator which creates Java policy files. The generated policies can be used together with
-the standard SecurityManager or pro-grade.
+the standard SecurityManager or ProGrade.
 
 [Read more ...](policy-file-generator.html)
 
@@ -71,10 +71,14 @@ the standard SecurityManager or pro-grade.
 **`net.sourceforge.prograde.sm.DumpMissingPermissionsJSM`**
 
 Simple and comfortable way to find, what permissions are missing in your policy files.
-Stop fighting with denied permissions one by one using obsolete `-Djava.security.debug` property.
-And print only the information which really counts. 
+Stop fighting against denied permissions one by one using obsolete `-Djava.security.debug` property.
+Print only information which really counts.
 
 This Security Manager prints permissions missing in your policy to error stream.
+
+    >> Denied permission java.util.PropertyPermission "com.acme.tapp.debug", "read";
+    >>> CodeSource: (file:/opt/acme/t-app/t-app.jar <no signer certificates>)
+
 
 [Read more ...](missing-permissions-dumper.html)
 
