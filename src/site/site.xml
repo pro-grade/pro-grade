@@ -34,6 +34,7 @@
             <item name="ProGrade policy" href="pro-grade.html" />
             <item name="Policy generator" href="policy-file-generator.html" />
             <item name="Permissions debugger" href="missing-permissions-dumper.html" />
+            <item name="Project history" href="history.html" />
             <item name="Release notes" href="ReleaseNotes-README.html" />            
         </menu>
     </body>
