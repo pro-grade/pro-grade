@@ -19,6 +19,8 @@
  */
 package net.sourceforge.prograde.sm;
 
+import java.security.Policy;
+
 import net.sourceforge.prograde.generator.NotifyAndAllowPolicy;
 import net.sourceforge.prograde.generator.PrintDeniedPermissions;
 
@@ -34,6 +36,6 @@ public class DumpMissingPermissionsJSM extends SecurityManager {
      * JSM Constructor.
      */
     public DumpMissingPermissionsJSM() {
-        SecurityActions.setPolicy(new NotifyAndAllowPolicy(null, new PrintDeniedPermissions()));
+        Policy.setPolicy(new NotifyAndAllowPolicy(null, new PrintDeniedPermissions()));
     }
 }

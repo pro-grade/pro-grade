@@ -19,6 +19,8 @@
  */
 package net.sourceforge.prograde.sm;
 
+import java.security.Policy;
+
 import net.sourceforge.prograde.generator.GeneratePolicyFromDeniedPermissions;
 import net.sourceforge.prograde.generator.NotifyAndAllowPolicy;
 
@@ -34,6 +36,6 @@ public class PolicyFileGeneratorJSM extends SecurityManager {
      * JSM Constructor.
      */
     public PolicyFileGeneratorJSM() {
-        SecurityActions.setPolicy(new NotifyAndAllowPolicy(null, new GeneratePolicyFromDeniedPermissions()));
+        Policy.setPolicy(new NotifyAndAllowPolicy(null, new GeneratePolicyFromDeniedPermissions()));
     }
 }

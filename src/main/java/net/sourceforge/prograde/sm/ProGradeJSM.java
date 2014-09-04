@@ -19,6 +19,8 @@
  */
 package net.sourceforge.prograde.sm;
 
+import java.security.Policy;
+
 import net.sourceforge.prograde.policy.ProGradePolicy;
 
 /**
@@ -34,6 +36,6 @@ public class ProGradeJSM extends SecurityManager {
      */
     public ProGradeJSM() {
         super();
-        SecurityActions.setPolicy(new ProGradePolicy());
+        Policy.setPolicy(new ProGradePolicy());
     }
 }
