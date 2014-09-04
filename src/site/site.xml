@@ -28,7 +28,6 @@
             <item name="pro-grade" href="/" />
         </breadcrumbs>
  -->
-
         <menu name="Documentation" inherit="top">
             <item name="pro-grade library" href="./" />
             <item name="ProGrade policy" href="pro-grade.html" />
@@ -36,6 +35,11 @@
             <item name="Permissions debugger" href="missing-permissions-dumper.html" />
             <item name="Project history" href="history.html" />
             <item name="Release notes" href="ReleaseNotes-README.html" />            
+        </menu>
+
+        <menu name="Community" inherit="top">
+            <item name="Google Group/Mailinglist" href="https://groups.google.com/forum/#!forum/pro-grade" />
+            <item name="Project Wiki" href="https://sourceforge.net/p/pro-grade/wiki/Home/" />
         </menu>
     </body>
 
@@ -71,7 +75,7 @@
             <titleTemplate>%2$s | %1$s</titleTemplate>
             <toc>top</toc>
             <tocTopMax>6</tocTopMax>
-            <topNav>Documentation</topNav>
+            <topNav>Documentation|Community</topNav>
             <bottomNav maxSpan="9">
                 <column>Main</column>
                 <column>Policy generator</column>
