@@ -4,7 +4,7 @@
 
 	<groupId>net.sourceforge.pro-grade</groupId>
 	<artifactId>pro-grade</artifactId>
-	<version>1.1-SNAPSHOT</version>
+	<version>1.1.0.Final</version>
 	<packaging>jar</packaging>
 
 	<name>pro-grade</name>
@@ -38,6 +38,7 @@
 		<developer>
 			<id>kwart</id>
 			<name>Josef Cacek</name>
+			<email>josef.cacek@gmail.com</email>
 		</developer>
 	</developers>
 
