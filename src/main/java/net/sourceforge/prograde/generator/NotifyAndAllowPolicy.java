@@ -60,7 +60,7 @@ public final class NotifyAndAllowPolicy extends Policy {
      *        {@link PrintDeniedPermissions} instance is used
      */
     public NotifyAndAllowPolicy(Policy policy, DeniedPermissionListener dpListener) {
-        if (policy == null) {
+        if (policy != null) {
             wrappedPolicy = policy;
         } else if (Boolean.parseBoolean(SecurityActions.getSystemProperty(PROGRADE_USE_OWN_POLICY))) {
             wrappedPolicy = new ProGradePolicy();
