@@ -58,8 +58,11 @@ public final class PrintDeniedPermissions implements DeniedPermissionListener {
     public void permissionDenied(final ProtectionDomain pd, final Permission perm) {
         final StringBuilder sb = new StringBuilder(">> Denied permission ");
         sb.append(perm.getClass().getName()).append(" \"") //
-                .append(perm.getName()).append("\", \"") //
-                .append(perm.getActions()).append("\";");
+                .append(perm.getName()).append("\""); //
+        if (perm.getActions()!=null && !perm.getActions().equals("")) {
+                sb.append(", \"").append(perm.getActions()).append("\"");
+        }
+        sb.append(";");
         if (includeCodeSource) {
             sb.append("\n>>> CodeSource: " + pd.getCodeSource());
         }

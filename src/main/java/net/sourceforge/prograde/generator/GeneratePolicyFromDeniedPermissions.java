@@ -155,7 +155,7 @@ public final class GeneratePolicyFromDeniedPermissions implements DeniedPermissi
                         if (p.getName() != null) {
                             pw.print(" \"" + p.getName() + "\"");
                         }
-                        if (p.getActions() != null) {
+                        if (p.getActions() != null && !p.getActions().equals("")) {
                             pw.print(", \"" + p.getActions() + "\"");
                         }
                         pw.println(";");
