@@ -30,10 +30,10 @@ import java.security.PrivilegedAction;
 import java.security.ProtectionDomain;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * DeniedPermissionListener implementation which generates a policy file with the denied permissions.
@@ -60,7 +60,7 @@ public final class GeneratePolicyFromDeniedPermissions implements DeniedPermissi
     };
 
     private final Map<CodeSource, Set<Permission>> missingPermissions = Collections
-            .synchronizedMap(new HashMap<CodeSource, Set<Permission>>());
+            .synchronizedMap(new TreeMap<CodeSource, Set<Permission>>(new CodesourceComparator()));
     private final File file;
     private boolean refreshed = false;
     private final FilePermission filePermissionToSkip;
@@ -114,7 +114,7 @@ public final class GeneratePolicyFromDeniedPermissions implements DeniedPermissi
             synchronized (missingPermissions) {
                 permSet = missingPermissions.get(codeSource);
                 if (permSet == null) {
-                    permSet = Collections.synchronizedSet(new HashSet<Permission>());
+                    permSet = Collections.synchronizedSet(new TreeSet<Permission>(new PermissionComparator()));
                     missingPermissions.put(codeSource, permSet);
                 }
             }
@@ -177,5 +177,5 @@ public final class GeneratePolicyFromDeniedPermissions implements DeniedPermissi
             }
         }
     }
-
+    
 }
