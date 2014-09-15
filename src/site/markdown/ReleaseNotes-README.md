@@ -4,6 +4,8 @@ The pro-grade library provides implementation of custom Java Security Managers a
 
 ## 1.1.1
 * sorting output of policy file generator alphabetically
+* do not print empty permission actions in policy file generator and missing permissions dumper
+* fixed wrong condition in NotifyAndAllowPolicy
 
 ## 1.1.0
 * relicensed under Apache License, version 2.0
