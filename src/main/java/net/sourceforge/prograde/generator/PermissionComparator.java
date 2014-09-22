@@ -23,25 +23,26 @@ import java.security.Permission;
 import java.util.Comparator;
 
 /**
- * Simple Comparator class for sorting Permission alphabetically.
- * It returns compared names of Permission classes. If they are same it returns compared names of permission. If they are same 
- * it returns compared permissions actions.
+ * Simple Comparator class for sorting Permission alphabetically. It returns compared names of Permission classes. If they are
+ * same it returns compared names of permission. If they are same it returns compared permissions actions.
  *
  * @author olukas
  */
-public class PermissionComparator implements Comparator<Permission>{
+public class PermissionComparator implements Comparator<Permission> {
 
     @Override
-    public int compare(Permission o1, Permission o2) {
-        if (o1.getClass().getName().compareToIgnoreCase(o2.getClass().getName())!=0) {
-            return o1.getClass().getName().compareToIgnoreCase(o2.getClass().getName());
+    public int compare(Permission p1, Permission p2) {
+        final int compareClassNames = p1.getClass().getName().compareTo(p2.getClass().getName());
+        if (compareClassNames != 0) {
+            return compareClassNames;
         } else {
-            if (o1.getName().compareToIgnoreCase(o2.getName())!=0) {
-                return o1.getName().compareToIgnoreCase(o2.getName());
+            final int comparePermissionNames = p1.getName().compareTo(p2.getName());
+            if (comparePermissionNames != 0) {
+                return comparePermissionNames;
             } else {
-                return o1.getActions().compareToIgnoreCase(o2.getActions());
+                return p1.getActions().compareTo(p2.getActions());
             }
-        }        
+        }
     }
-    
+
 }
