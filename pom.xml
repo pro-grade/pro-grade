@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>net.sourceforge.pro-grade</groupId>
@@ -23,7 +24,7 @@
 	</licenses>
 
 	<scm>
-		<connection>scm:git:git://github.com:pro-grade/pro-grade.git</connection>
+		<connection>scm:git:https://github.com/pro-grade/pro-grade.git</connection>
 		<developerConnection>scm:git:git@github.com:pro-grade/pro-grade.git</developerConnection>
 		<url>http://github.com/pro-grade/pro-grade</url>
 	</scm>
@@ -40,6 +41,21 @@
 			<email>josef.cacek@gmail.com</email>
 		</developer>
 	</developers>
+
+	<mailingLists>
+		<mailingList>
+			<name>User List</name>
+			<subscribe>pro-grade+subscribe@googlegroups.com</subscribe>
+			<unsubscribe>pro-grade+unsubscribe@googlegroups.com</unsubscribe>
+			<post>pro-grade@googlegroups.com</post>
+			<archive>http://groups.google.com/forum/#!forum/pro-grade</archive>
+		</mailingList>
+	</mailingLists>
+
+	<issueManagement>
+		<system>GitHub</system>
+		<url>http://github.com/pro-grade/pro-grade/issues</url>
+	</issueManagement>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -112,11 +128,6 @@
 						<version>1.6</version>
 					</dependency>
 				</dependencies>
-				<!-- -->
-				<configuration>
-					<generateProjectInfo>false</generateProjectInfo>
-					<generateReports>false</generateReports>
-				</configuration>
 			</plugin>
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
@@ -140,6 +151,66 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-project-info-reports-plugin</artifactId>
+				<version>2.7</version>
+				<reportSets>
+					<reportSet>
+						<reports>
+							<report>summary</report>
+							<report>dependency-info</report>
+							<report>project-team</report>
+							<report>mailing-list</report>
+							<report>issue-tracking</report>
+							<report>license</report>
+							<report>scm</report>
+						</reports>
+					</reportSet>
+				</reportSets>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.10</version>
+				<reportSets>
+					<reportSet>
+						<id>html</id>
+						<reports>
+							<report>javadoc</report>
+						</reports>
+					</reportSet>
+				</reportSets>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-changes-plugin</artifactId>
+				<version>2.10</version>
+				<configuration>
+					<includeOpenIssues>false</includeOpenIssues>
+					<columnNames>Id,Type,Summary,Fix Version</columnNames>
+				</configuration>
+				<reportSets>
+					<reportSet>
+						<!-- Empty report set as default -->
+						<reports>
+						</reports>
+					</reportSet>
+					<reportSet>
+						<id>release-notes</id>
+						<inherited>false</inherited>
+						<reports>
+							<report>github-report</report>
+						</reports>
+					</reportSet>
+				</reportSets>
+			</plugin>
+		</plugins>
+	</reporting>
+
 
 	<distributionManagement>
 		<snapshotRepository>
