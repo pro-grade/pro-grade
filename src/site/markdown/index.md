@@ -102,10 +102,10 @@ java -classpath [ORIGINAL_CP:]/path/to/prograde.jar \
 
 The `-classpath` (`-cp`) java argument is not used when an application is started 
 using `-jar` Java argument. In such case either add `pro-grade.jar` to the classpath referenced 
-from the `META-INF/MANIFEST.MF` in the jar or use the classic for starting Java apps:
+from the `META-INF/MANIFEST.MF` in the jar or use the classic way for starting Java apps:
 
 ```
-java -classpath <YourClassPath> [otherJvmArgs] <MainClassOfTheApplication> [ApplicationParams]
+java -classpath pro-grade.jar:<ApplicationClasspath> [otherJvmArgs] <MainClassOfTheApplication> [ApplicationParams]
 ```  
 
 ### Java API

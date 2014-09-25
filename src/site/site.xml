@@ -23,11 +23,7 @@
                 href="http://sourceforge.net/projects/pro-grade/files/latest/download" />
             <item name="GitHub project" href="http://github.com/pro-grade/pro-grade/" />
         </links>
-<!-- 
-        <breadcrumbs>
-            <item name="pro-grade" href="/" />
-        </breadcrumbs>
- -->
+        
         <menu name="Documentation" inherit="top">
             <item name="pro-grade library" href="./" />
             <item name="ProGrade policy" href="pro-grade.html" />
@@ -40,7 +36,10 @@
         <menu name="Community" inherit="top">
             <item name="Google Group/Mailinglist" href="https://groups.google.com/forum/#!forum/pro-grade" />
             <item name="Project Wiki" href="https://sourceforge.net/p/pro-grade/wiki/Home/" />
+            <item name="Report issue" href="http://github.com/pro-grade/pro-grade/issues" />
         </menu>
+        
+        <menu name="Maven documentation" ref="reports" inherit="bottom"/>
     </body>
 
     <custom>
@@ -71,20 +70,19 @@
                     </sections>
                 </index>
             </pages>
-            <slogan>Java Policy With Grant And Deny Rules</slogan>
+            <slogan>Java Security Manager made   easy</slogan>
             <titleTemplate>%2$s | %1$s</titleTemplate>
             <toc>top</toc>
             <tocTopMax>6</tocTopMax>
             <topNav>Documentation|Community</topNav>
             <bottomNav maxSpan="9">
-                <column>Main</column>
-                <column>Policy generator</column>
-                <column>reports</column>
+                <column>Documentation</column>
+                <column>Community</column>
+                <column>Maven documentation</column>
             </bottomNav>
             <bottomDescription>
             <![CDATA[
-                <span class="color-highlight">pro-grade</span> library implements custom java.security.Policy
-                with support for <strong>deny</strong> entries.
+                <span class="color-highlight">pro-grade</span> library makes your life with Java Security Manager easy.
             ]]>
             </bottomDescription>
         </reflowSkin>
