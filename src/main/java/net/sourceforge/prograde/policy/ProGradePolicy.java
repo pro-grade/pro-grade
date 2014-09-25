@@ -856,13 +856,12 @@ public class ProGradePolicy extends Policy {
 
     }
 
-    // TODO Do we need platform dependent file separator?
     /**
      * Gets {@link URI#toASCIIString()} as an input and the escaped octets %XX are converted to lower case (because of the
      * Oracle PolicyFile implementation of CodeSource comparing).
      * 
      * @param encodedUri
-     * @return
+     * @return given URI String with lower-cased codes of non-ascii characters
      */
     private static String fixEncodedURI(final String encodedUri) {
         if (encodedUri == null) {

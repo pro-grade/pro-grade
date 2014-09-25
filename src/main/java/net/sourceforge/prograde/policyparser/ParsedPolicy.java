@@ -45,7 +45,6 @@ public class ParsedPolicy {
      * @param denyEntries list of deny entries
      * @param keystore keystore entry
      * @param keystorePasswordURL keystore password URL
-     * @param policyFile file with this parsed policy file
      */
     public ParsedPolicy(List<ParsedPolicyEntry> grantEntries, List<ParsedPolicyEntry> denyEntries,
             ParsedKeystoreEntry keystore, String keystorePasswordURL) {
@@ -59,7 +58,6 @@ public class ParsedPolicy {
      * @param denyEntries list of deny entries
      * @param keystore keystore entry
      * @param keystorePasswordURL keystore password URL
-     * @param policyFile file with this parsed policy file
      * @param priority priority of entries
      */
     public ParsedPolicy(List<ParsedPolicyEntry> grantEntries, List<ParsedPolicyEntry> denyEntries,
