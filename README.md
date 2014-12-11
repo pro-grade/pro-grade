@@ -7,7 +7,9 @@ The pro-grade library provides implementation of custom Java Security Managers a
 ## Build project
 Simply use:
 
-	$ mvn clean install
+```Shell
+$ mvn clean install
+```
 
 ## Run your App with ProGrade Security manager
 
@@ -19,6 +21,51 @@ java \
      "-Djava.security.policy=/path/to/your-app-prograde.policy" \
      ...
 ```
+
+## Java Policy File Generator
+
+The generator is a custom Java Security Manager, which generates a simple policy file from permissions checked by Java Application. The generated policy file can be used with the standard Java Security Manager afterwards.
+
+### Generate the policy file
+
+Simply use the custom Java Security Manager class *net.sourceforge.prograde.generator.PolicyFileGeneratorJSM* when starting your Java application. Then go through usual application worklows and the generator will create a policy file with *missing permissions* for you.
+
+Other steps are optional:
+
+* configure the initial policy file (if you already have one)
+  * set the path to the java.security.policy system property
+  * use 2 equal characters “==” if you don’t want to use default policy configured for JRE 
+* configure the output file
+  * set the path to the prograde.generated.policy system property
+  * if you don’t set this property, then a new file will be generated in the user’s temporary directory
+
+```Shell
+java \
+    -Djava.security.manager=net.sourceforge.prograde.sm.PolicyFileGeneratorJSM \
+    -Djava.security.policy==/path/to/initial.policy \
+    -Dprograde.generated.policy=/tmp/generated.policy \
+    ...
+```
+
+### Use the generated policy
+
+Test the generated.policy file with standard Java Security Manager: 
+
+```Shell
+java \
+    -Djava.security.manager \
+    -Djava.security.policy==/tmp/generated.policy \
+    ..
+```
+
+### ProGrade as the underlying policy
+
+The standard Java Policy implementation is used as the underlying implementation for the policy file generator. You can use ProGrade policy instead when you set *prograde.use.own.policy* system property to true.
+
+```Shell
+-Dprograde.use.own.policy=true
+```
+
 
 ## Work with denying rules
 
