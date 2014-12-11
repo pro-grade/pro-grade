@@ -17,10 +17,41 @@ Only thing which you need to do is to add standard java properties for enabling 
 
 ```Shell
 java \
-     "-Djava.security.manager=net.sourceforge.prograde.sm.ProGradeJSM" \
-     "-Djava.security.policy=/path/to/your-app-prograde.policy" \
+     -Djava.security.manager=net.sourceforge.prograde.sm.ProGradeJSM \
+     -Djava.security.policy=/path/to/your-app-prograde.policy \
      ...
 ```
+
+## Work with denying rules
+
+### Deny entries
+
+It is a quite similar as standard policy in Java. It also works with policy file with grant entries, but you can also write deny entries - it uses same definitions as grant entries but meaning of them is opposite. For denying rules use keyword "deny".
+
+You can take a look into [policy files in pro-grade testsuite](https://github.com/pro-grade/progradeTests/tree/master/src/test/resources/policyfiles).
+
+### Priority entry
+
+You can set *`priority`* on `"grant"` or `"deny"`. The `priority` says what rules is stronger when grant and deny are in conflict. If you use deny priority, all actions are as default denied. If you use grant priority, all actions are as default granted. It means that standard Java uses as 
+default `"deny"` priority.
+
+### Sample policy
+
+```Java
+// following entry can be ommited because "deny" value is the default
+priority "deny";
+
+// grant full access to /tmp folder
+grant {
+	permission java.io.FilePermission "/tmp/-", "read,write";
+};
+
+// deny write access for a single subfolder in /tmp
+deny {
+	permission java.io.FilePermission "/tmp/static/-", "write";
+};
+```
+
 
 ## Java Policy File Generator
 
@@ -58,7 +89,31 @@ java \
     ..
 ```
 
-### ProGrade as the underlying policy
+
+## Java Missing Permissions Dumper
+
+If you don’t need to generate Java Policy file and you only want to check in console which Java Permissions are missing in your policy file, then use the second custom Java Security Manager, which prints the missing permissions to *System.err* stream.
+
+### Dump the missing permissions
+
+Main step is to use a custom Java Security Manager class *net.sourceforge.prograde.generator.DumpMissingPermissionsJSM* when starting your Java application. Then go through usual application worklows and the generator will print the missing permissions to the *error stream*.
+
+Other steps are optional:
+
+* configure the initial policy file (if you already have one)
+  * set the path to the java.security.policy system property
+  * use 2 equal characters “==” if you don’t want to use default policy configured for JRE
+
+```Shell
+java \
+    -Djava.security.manager=net.sourceforge.prograde.sm.DumpMissingPermissionsJSM \
+    -Djava.security.policy==/path/to/initial.policy \
+    ...
+```
+
+
+
+## ProGrade as the underlying policy
 
 The standard Java Policy implementation is used as the underlying implementation for the policy file generator. You can use ProGrade policy instead when you set *prograde.use.own.policy* system property to true.
 
@@ -67,35 +122,6 @@ The standard Java Policy implementation is used as the underlying implementation
 ```
 
 
-## Work with denying rules
-
-### Deny entries
-
-It is a quite similar as standard policy in Java. It also works with policy file with grant entries, but you can also write deny entries - it uses same definitions as grant entries but meaning of them is opposite. For denying rules use keyword "deny".
-
-You can take a look into [policy files in pro-grade testsuite](https://github.com/pro-grade/progradeTests/tree/master/src/test/resources/policyfiles).
-
-### Priority entry
-
-You can set *`priority`* on `"grant"` or `"deny"`. The `priority` says what rules is stronger when grant and deny are in conflict. If you use deny priority, all actions are as default denied. If you use grant priority, all actions are as default granted. It means that standard Java uses as 
-default `"deny"` priority.
-
-### Sample policy
-
-```Java
-// following entry can be ommited because "deny" value is the default
-priority "deny";
-
-// grant full access to /tmp folder
-grant {
-	permission java.io.FilePermission "/tmp/-", "read,write";
-};
-
-// deny write access for a single subfolder in /tmp
-deny {
-	permission java.io.FilePermission "/tmp/static/-", "write";
-};
-```
 
 ## License
 
