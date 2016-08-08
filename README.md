@@ -59,7 +59,7 @@ The generator is a custom Java Security Manager, which generates a simple policy
 
 ### Generate the policy file
 
-Simply use the custom Java Security Manager class *net.sourceforge.prograde.generator.PolicyFileGeneratorJSM* when starting your Java application. Then go through usual application worklows and the generator will create a policy file with *missing permissions* for you.
+Simply use the custom Java Security Manager class *net.sourceforge.prograde.sm.PolicyFileGeneratorJSM* when starting your Java application. Then go through usual application worklows and the generator will create a policy file with *missing permissions* for you.
 
 Other steps are optional:
 
