@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import static net.sourceforge.prograde.generator.GeneratorUtils.createPrintablePermissionName;
 
 /**
  * DeniedPermissionListener implementation which generates a policy file with the denied permissions.
@@ -153,7 +154,7 @@ public final class GeneratePolicyFromDeniedPermissions implements DeniedPermissi
                     for (Permission p : csEntry.getValue()) {
                         pw.print("  permission " + p.getClass().getName());
                         if (p.getName() != null) {
-                            pw.print(" \"" + p.getName() + "\"");
+                            pw.print(" \"" + createPrintablePermissionName(p.getName()) + "\"");
                         }
                         if (p.getActions() != null && !p.getActions().equals("")) {
                             pw.print(", \"" + p.getActions() + "\"");

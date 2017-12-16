@@ -22,6 +22,7 @@ package net.sourceforge.prograde.generator;
 import java.io.PrintStream;
 import java.security.Permission;
 import java.security.ProtectionDomain;
+import static net.sourceforge.prograde.generator.GeneratorUtils.createPrintablePermissionName;
 
 /**
  * Simple implementation of {@link DeniedPermissionListener} which prints the denied permissions to given {@link PrintStream}
@@ -58,7 +59,7 @@ public final class PrintDeniedPermissions implements DeniedPermissionListener {
     public void permissionDenied(final ProtectionDomain pd, final Permission perm) {
         final StringBuilder sb = new StringBuilder(">> Denied permission ");
         sb.append(perm.getClass().getName()).append(" \"") //
-                .append(perm.getName()).append("\""); //
+                .append(createPrintablePermissionName(perm.getName())).append("\""); //
         if (perm.getActions()!=null && !perm.getActions().equals("")) {
                 sb.append(", \"").append(perm.getActions()).append("\"");
         }
